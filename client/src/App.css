@@ -1,37 +1,29 @@
 :root {
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --danger: #dc2626;
-  --danger-hover: #b91c1c;
+  --primary: #859f84;
+  --primary-hover: #99ad98;
+  --danger: #ffa683;
+  --danger-hover: #ffb38e;
   --surface: #ffffff;
-  --page-bg: #f3f4f8;
-  --row-alt: #f8f9fc;
+  --page-bg: #b2c0b2;
+  --row-alt: #fff4ec;
   --radius: 12px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --primary: #818cf8;
-    --primary-hover: #a5b4fc;
-    --surface: #1f2028;
-    --page-bg: #16171d;
-    --row-alt: #252733;
-  }
-}
-
 body {
-  background: var(--page-bg);
+  background: var(--page-bg) url('./assets/uziel-bg.png') center / cover fixed no-repeat;
 }
 
 #root {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1600px;
   border-inline: none;
   text-align: start;
 }
 
 .page {
   padding: 0 24px 48px;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 .page h1 {
@@ -84,6 +76,10 @@ body {
 
 .form-error {
   color: var(--danger);
+}
+
+.form-success {
+  color: var(--primary);
 }
 
 /* Buttons */
@@ -161,6 +157,38 @@ button.danger:hover {
   align-self: flex-start;
 }
 
+.form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* טופס רחב - שתי עמודות כדי שלא לגלול */
+.form-wide {
+  max-width: 900px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+}
+
+.form-wide .form-error,
+.form-wide .form-actions {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 700px) {
+  .form-wide {
+    grid-template-columns: 1fr;
+  }
+}
+
+.home-logo {
+  display: block;
+  max-width: 480px;
+  width: 100%;
+  height: auto;
+  margin: 32px auto 0;
+}
+
 /* Tables */
 .filter {
   display: flex;
@@ -176,6 +204,7 @@ button.danger:hover {
 
 .table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -186,13 +215,26 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 16px;
+  color: var(--text-h);
 }
 
 th,
 td {
-  padding: 12px 16px;
+  padding: 16px 20px;
   text-align: start;
   border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+/* עמודות תוכן רחבות לא נדחסות */
+td:not(:first-child):not(:nth-child(2)):not(.actions) {
+  min-width: 140px;
+}
+
+/* שם וכיתה לא נשברים לשורות */
+td:first-child,
+td:nth-child(2) {
+  white-space: nowrap;
 }
 
 th {
@@ -219,13 +261,40 @@ td.empty {
   text-align: center;
 }
 
+/* עמודת פעולות: נשארת table-cell כדי לא לשבור את גבולות הטבלה */
 td.actions {
-  display: flex;
-  gap: 8px;
   white-space: nowrap;
+}
+
+/* עמודת הפעולות דביקה לקצה כדי שלא תיחתך כשהטבלה גוללת */
+.table-wrap thead th:last-child,
+.table-wrap td.actions {
+  position: sticky;
+  left: 0;
+  box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.15);
+}
+
+.table-wrap thead th:last-child {
+  background: var(--accent-bg);
+}
+
+.table-wrap td.actions {
+  background: var(--surface);
+}
+
+.table-wrap tbody tr:nth-child(even) td.actions {
+  background: var(--row-alt);
+}
+
+.table-wrap tbody tr:hover td.actions {
+  background: var(--accent-bg);
 }
 
 td.actions button {
   padding: 6px 12px;
   font-size: 14px;
+}
+
+td.actions button + button {
+  margin-inline-start: 8px;
 }

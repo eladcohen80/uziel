@@ -3,6 +3,8 @@ export type Pupil = {
   name: string
   className: string
   startYearGrade1?: number
+  Integration: string
+  Diagnosis: string
   Educationalresponse: string
   Emotionalresponse: string
   Otherresponse: string

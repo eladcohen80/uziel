@@ -15,7 +15,7 @@ export default function PupilsTable() {
     const query = search.trim().toLowerCase()
     const visiblePupils = pupils.filter(p =>
         (!selectedClass || p.className === selectedClass) &&
-        (!query || [p.name, p.className, p.Educationalresponse, p.Emotionalresponse, p.Otherresponse, p.Notes]
+        (!query || [p.name, p.className, p.Integration, p.Diagnosis, p.Educationalresponse, p.Emotionalresponse, p.Otherresponse, p.Notes]
             .some(field => field?.toLowerCase().includes(query)))
     )
 
@@ -63,9 +63,11 @@ export default function PupilsTable() {
                 <tr>
                     <th>שם</th>
                     <th>כיתה</th>
-                    <th>מענה לימודי</th>
-                    <th>מענה רגשי</th>
-                    <th>מענה אחר</th>
+                    <th>שילוב/סל אישי</th>
+                    <th>יש איבחון? איזה?</th>
+                    <th>תמיכה לימודית</th>
+                    <th>תמיכה ריגשית</th>
+                    <th>מענים נוספים</th>
                     <th>הערות</th>
                     <th>פעולות</th>
                 </tr>
@@ -75,6 +77,8 @@ export default function PupilsTable() {
                     <tr key={pupil.id}>
                         <td>{pupil.name}</td>
                         <td>{classLabel(pupil.className)}</td>
+                        <td>{pupil.Integration}</td>
+                        <td>{pupil.Diagnosis}</td>
                         <td>{pupil.Educationalresponse}</td>
                         <td>{pupil.Emotionalresponse}</td>
                         <td>{pupil.Otherresponse}</td>
@@ -86,7 +90,7 @@ export default function PupilsTable() {
                     </tr>
                 ))}
                 {visiblePupils.length === 0 && (
-                    <tr><td colSpan={7} className="empty">אין תלמידים להצגה</td></tr>
+                    <tr><td colSpan={9} className="empty">אין תלמידים להצגה</td></tr>
                 )}
             </tbody>
         </table>

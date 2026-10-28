@@ -46,7 +46,7 @@ export const getPupilById = async (req: AuthRequest, res: Response) => {
 export const createPupil = async (req: AuthRequest, res: Response) => {
     const cls = allowedClass(req)
     if (cls === undefined) return forbidNoClass(res)
-    const { name, Educationalresponse, Emotionalresponse, Otherresponse, Notes } = req.body
+    const { name, Integration, Diagnosis, Educationalresponse, Emotionalresponse, Otherresponse, Notes } = req.body
     // משתמש רגיל יכול ליצור תלמידים רק בכיתה שלו
     const className = cls === null ? req.body.className : cls
     if (!isValidClass(className)) return res.status(400).json({ error: 'Invalid class' })
@@ -54,8 +54,8 @@ export const createPupil = async (req: AuthRequest, res: Response) => {
     if (startYearGrade1 === null) return res.status(400).json({ error: 'Start year required for this class' })
     try {
         const newPupil = await sql`
-            INSERT INTO pupils (name, startYearGrade1, class_suffix, Educationalresponse, Emotionalresponse, Otherresponse, Notes)
-            VALUES (${name}, ${startYearGrade1}, ${classSuffix(className)}, ${Educationalresponse}, ${Emotionalresponse}, ${Otherresponse}, ${Notes})
+            INSERT INTO pupils (name, startYearGrade1, class_suffix, Integration, Diagnosis, Educationalresponse, Emotionalresponse, Otherresponse, Notes)
+            VALUES (${name}, ${startYearGrade1}, ${classSuffix(className)}, ${Integration}, ${Diagnosis}, ${Educationalresponse}, ${Emotionalresponse}, ${Otherresponse}, ${Notes})
             RETURNING *
         `
         res.status(201).json(newPupil[0])
@@ -68,7 +68,7 @@ export const updatePupil = async (req: AuthRequest, res: Response) => {
     const { id } = req.params
     const cls = allowedClass(req)
     if (cls === undefined) return forbidNoClass(res)
-    const { name, Educationalresponse, Emotionalresponse, Otherresponse, Notes } = req.body
+    const { name, Integration, Diagnosis, Educationalresponse, Emotionalresponse, Otherresponse, Notes } = req.body
     const className = cls === null ? req.body.className : cls
     if (!isValidClass(className)) return res.status(400).json({ error: 'Invalid class' })
     const startYearGrade1 = classToStartYear(className, req.body.startYearGrade1)
@@ -76,7 +76,7 @@ export const updatePupil = async (req: AuthRequest, res: Response) => {
     try {
         const updatedPupil = await sql`
             UPDATE pupils
-            SET name = ${name}, startYearGrade1 = ${startYearGrade1}, class_suffix = ${classSuffix(className)}, Educationalresponse = ${Educationalresponse}, Emotionalresponse = ${Emotionalresponse}, Otherresponse = ${Otherresponse}, Notes = ${Notes}
+            SET name = ${name}, startYearGrade1 = ${startYearGrade1}, class_suffix = ${classSuffix(className)}, Integration = ${Integration}, Diagnosis = ${Diagnosis}, Educationalresponse = ${Educationalresponse}, Emotionalresponse = ${Emotionalresponse}, Otherresponse = ${Otherresponse}, Notes = ${Notes}
             WHERE id = ${id} AND (${cls}::text IS NULL OR id IN (SELECT id FROM pupils_view WHERE class_name = ${cls}::text))
             RETURNING *
         `

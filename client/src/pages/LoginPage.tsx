@@ -35,6 +35,7 @@ export default function LoginPage() {
         </label>
         {error && <p className="form-error">{error}</p>}
         <button type="submit">התחבר</button>
+        <p><Link to="/forgot-password">שכחתי סיסמה</Link></p>
         <p>אין לך חשבון? <Link to="/register">הרשמה</Link></p>
       </form>
     </div>

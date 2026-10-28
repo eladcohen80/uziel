@@ -6,6 +6,8 @@ import PupilsPage from './pages/PupilsPage'
 import PupilFormPage from './pages/PupilFormPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import './App.css'
 
@@ -14,6 +16,8 @@ function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/" element={<ProtectedRoute><Homepage /></ProtectedRoute>} />
       <Route path="/teachers" element={<ProtectedRoute><TeachersPage /></ProtectedRoute>} />
       <Route path="/teacherForm" element={<ProtectedRoute adminOnly><TeacherFormPage /></ProtectedRoute>} />

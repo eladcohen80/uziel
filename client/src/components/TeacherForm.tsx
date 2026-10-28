@@ -71,7 +71,10 @@ export default function TeacherForm(){
                 </select>
             </label>
             {error && <p className="form-error">{error}</p>}
-            <button type="submit">שמירה</button>
+            <div className="form-actions">
+                <button type="submit">שמירה</button>
+                <button type="button" onClick={() => navigate('/teachers')}>סגירה</button>
+            </div>
         </form>
     )
 }

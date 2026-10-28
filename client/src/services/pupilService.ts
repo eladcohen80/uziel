@@ -8,6 +8,8 @@ type PupilRow = {
   name: string
   class_name: string
   startyeargrade1: number
+  integration: string
+  diagnosis: string
   educationalresponse: string
   emotionalresponse: string
   otherresponse: string
@@ -20,6 +22,8 @@ function mapPupil(row: PupilRow): Pupil {
     name: row.name,
     className: row.class_name,
     startYearGrade1: row.startyeargrade1,
+    Integration: row.integration,
+    Diagnosis: row.diagnosis,
     Educationalresponse: row.educationalresponse,
     Emotionalresponse: row.emotionalresponse,
     Otherresponse: row.otherresponse,

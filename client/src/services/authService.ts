@@ -35,6 +35,27 @@ export async function register(user_name: string, email: string, password: strin
   saveSession(await post('register', { user_name, email, password, teacher_id }))
 }
 
+async function postMessage(path: string, body: object): Promise<string> {
+  const response = await fetch(`${API_URL}/${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(data.error || 'שגיאה בשרת')
+  }
+  return data.message
+}
+
+export function forgotPassword(email: string) {
+  return postMessage('forgot-password', { email })
+}
+
+export function resetPassword(token: string, password: string) {
+  return postMessage('reset-password', { token, password })
+}
+
 export function getStoredUser(): AuthUser | null {
   const raw = localStorage.getItem('user')
   if (!raw) return null

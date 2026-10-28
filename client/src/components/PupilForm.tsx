@@ -8,6 +8,8 @@ const EMPTY_PUPIL: Pupil = {
     id: '',
     name: '',
     className: CLASSES[0],
+    Integration: '',
+    Diagnosis: '',
     Educationalresponse: '',
     Emotionalresponse: '',
     Otherresponse: '',
@@ -49,7 +51,7 @@ export default function PupilForm(){
     }
 
     return (
-        <form className="form" onSubmit={handleSubmit}>
+        <form className="form form-wide" onSubmit={handleSubmit}>
             <label>
                 שם
                 <input name="name" value={pupil.name} onChange={handleChange} required />
@@ -69,6 +71,14 @@ export default function PupilForm(){
                 </label>
             )}
             <label>
+                שילוב/סל אישי
+                <input name="Integration" value={pupil.Integration ?? ''} onChange={handleChange} />
+            </label>
+            <label>
+                יש איבחון? איזה?
+                <input name="Diagnosis" value={pupil.Diagnosis ?? ''} onChange={handleChange} />
+            </label>
+            <label>
                 מענה לימודי
                 <input name="Educationalresponse" value={pupil.Educationalresponse ?? ''} onChange={handleChange} />
             </label>
@@ -85,7 +95,10 @@ export default function PupilForm(){
                 <textarea name="Notes" value={pupil.Notes ?? ''} onChange={handleChange} />
             </label>
             {error && <p className="form-error">{error}</p>}
-            <button type="submit">שמירה</button>
+            <div className="form-actions">
+                <button type="submit">שמירה</button>
+                <button type="button" onClick={() => navigate('/pupiles')}>סגירה</button>
+            </div>
         </form>
     )
 }

@@ -30,6 +30,13 @@ async function initDb() {
     `
     await sql`ALTER TABLE teachers ADD COLUMN IF NOT EXISTS user_id INTEGER UNIQUE REFERENCES users(user_id) ON DELETE SET NULL`
     await sql`
+        CREATE TABLE IF NOT EXISTS password_reset_tokens (
+            user_id INTEGER PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
+            token_hash TEXT NOT NULL,
+            expires_at TIMESTAMPTZ NOT NULL
+        )
+    `
+    await sql`
         CREATE TABLE IF NOT EXISTS pupils (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             name TEXT NOT NULL,
@@ -52,8 +59,22 @@ async function initDb() {
             END IF;
         END $$
     `
+    // בעלי תפקידים (מנהלת/יועצת) אינם משויכים לכיתה - בדיוק אחד מ-grade/position
+    await sql`ALTER TABLE teachers ALTER COLUMN grade DROP NOT NULL`
+    await sql`ALTER TABLE teachers ADD COLUMN IF NOT EXISTS position TEXT`
+    await sql`
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'teachers_grade_or_position_check') THEN
+                ALTER TABLE teachers ADD CONSTRAINT teachers_grade_or_position_check
+                    CHECK ((grade IS NOT NULL) <> (position IS NOT NULL));
+            END IF;
+        END $$
+    `
     // class_suffix: המספר (1/2/3) נשמר קבוע; האות נגזרת משנת ההתחלה ב-view. במקדמות נשמר השם המלא.
     await sql`ALTER TABLE pupils ADD COLUMN IF NOT EXISTS class_suffix TEXT`
+    await sql`ALTER TABLE pupils ADD COLUMN IF NOT EXISTS Integration TEXT`
+    await sql`ALTER TABLE pupils ADD COLUMN IF NOT EXISTS Diagnosis TEXT`
     // במקדמות אין שנת התחלה חובה
     await sql`ALTER TABLE pupils ALTER COLUMN startyeargrade1 DROP NOT NULL`
     const oldColumn = await sql`SELECT 1 FROM information_schema.columns WHERE table_name = 'pupils' AND column_name = 'class_name'`
@@ -66,8 +87,10 @@ async function initDb() {
         await sql`DROP VIEW IF EXISTS pupils_view`
         await sql`ALTER TABLE pupils DROP COLUMN class_name`
     }
+    // DROP לפני יצירה מחדש כי CREATE OR REPLACE לא יכול לשנות עמודות ב-view קיים
+    await sql`DROP VIEW IF EXISTS pupils_view`
     await sql`
-        CREATE OR REPLACE VIEW pupils_view AS
+        CREATE VIEW pupils_view AS
         SELECT p.*,
             CASE WHEN p.class_suffix ~ '^[0-9]+$'
                 THEN COALESCE((ARRAY['א','ב','ג','ד','ה','ו'])[s.year - p.startyeargrade1 + 1] || p.class_suffix, 'סיים')

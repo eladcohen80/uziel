@@ -20,6 +20,7 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "@getbrevo/brevo": "^6.2.0",
     "@neondatabase/serverless": "^1.2.0",
     "bcryptjs": "^3.0.3",
     "dotenv": "^18.0.9",
