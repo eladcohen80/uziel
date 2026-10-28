@@ -1,0 +1,231 @@
+:root {
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --surface: #ffffff;
+  --page-bg: #f3f4f8;
+  --row-alt: #f8f9fc;
+  --radius: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #818cf8;
+    --primary-hover: #a5b4fc;
+    --surface: #1f2028;
+    --page-bg: #16171d;
+    --row-alt: #252733;
+  }
+}
+
+body {
+  background: var(--page-bg);
+}
+
+#root {
+  width: 100%;
+  max-width: 1100px;
+  border-inline: none;
+  text-align: start;
+}
+
+.page {
+  padding: 0 24px 48px;
+}
+
+.page h1 {
+  margin: 32px 0 20px;
+  font-size: 32px;
+  letter-spacing: normal;
+}
+
+.subtitle {
+  font-size: 20px;
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.navbar a {
+  padding: 8px 14px;
+  border-radius: 8px;
+  color: var(--text-h);
+  text-decoration: none;
+  font-size: 16px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.navbar a:hover {
+  background: var(--accent-bg);
+  color: var(--primary);
+}
+
+.navbar button,
+.navbar-auth {
+  margin-inline-start: auto;
+}
+
+.navbar-auth {
+  display: flex;
+  gap: 8px;
+}
+
+.form-error {
+  color: var(--danger);
+}
+
+/* Buttons */
+button {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: var(--primary-hover);
+}
+
+button.danger {
+  background: var(--danger);
+}
+
+button.danger:hover {
+  background: var(--danger-hover);
+}
+
+/* Forms */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 520px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.form input,
+.form select,
+.form textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 16px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form input:focus,
+.form select:focus,
+.form textarea:focus {
+  outline: 2px solid var(--accent-border);
+  border-color: var(--primary);
+}
+
+.form button {
+  align-self: flex-start;
+}
+
+/* Tables */
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.filter input,
+.filter select {
+  padding: 6px 10px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+}
+
+th,
+td {
+  padding: 12px 16px;
+  text-align: start;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  background: var(--accent-bg);
+  color: var(--text-h);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+tbody tr:nth-child(even) {
+  background: var(--row-alt);
+}
+
+tbody tr:hover {
+  background: var(--accent-bg);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+td.empty {
+  padding: 32px;
+  text-align: center;
+}
+
+td.actions {
+  display: flex;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+td.actions button {
+  padding: 6px 12px;
+  font-size: 14px;
+}

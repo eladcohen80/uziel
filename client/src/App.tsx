@@ -1,0 +1,28 @@
+import { Route, Routes } from 'react-router-dom'
+import Homepage from './pages/Homepage'
+import TeachersPage from './pages/TeachersPage'
+import TeacherFormPage from './pages/TeacherFormPage'
+import PupilsPage from './pages/PupilsPage'
+import PupilFormPage from './pages/PupilFormPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import ProtectedRoute from './components/ProtectedRoute'
+import './App.css'
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/" element={<ProtectedRoute><Homepage /></ProtectedRoute>} />
+      <Route path="/teachers" element={<ProtectedRoute><TeachersPage /></ProtectedRoute>} />
+      <Route path="/teacherForm" element={<ProtectedRoute adminOnly><TeacherFormPage /></ProtectedRoute>} />
+      <Route path="/teacherForm/:id" element={<ProtectedRoute><TeacherFormPage /></ProtectedRoute>} />
+      <Route path="/pupiles" element={<ProtectedRoute><PupilsPage /></ProtectedRoute>} />
+      <Route path="/pupilForm" element={<ProtectedRoute><PupilFormPage /></ProtectedRoute>} />
+      <Route path="/pupilForm/:id" element={<ProtectedRoute><PupilFormPage /></ProtectedRoute>} />
+    </Routes>
+  )
+}
+
+export default App
