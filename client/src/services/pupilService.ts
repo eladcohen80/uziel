@@ -1,6 +1,7 @@
 import { authFetch } from './api'
+import { API_BASE } from './config'
 import type { Pupil } from '../types/Pupil'
-const API_URL = '/api/pupils'
+const API_URL = `${API_BASE}/api/pupils`
 
 // Postgres מחזיר שמות עמודות באותיות קטנות
 type PupilRow = {

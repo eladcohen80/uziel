@@ -7,6 +7,31 @@ import authRoutes from './routes/authRoutes'
 const app = express()
 app.use(express.json())
 
+// CORS - הקליינט מתארח בדומיין נפרד ב-Vercel
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', process.env.CLIENT_URL || '*')
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(204)
+        return
+    }
+    next()
+})
+
+// מחכים לאתחול מסד הנתונים לפני טיפול בבקשות (חשוב ב-serverless)
+const dbReady = initDb()
+dbReady.catch(() => {}) // השגיאה עצמה מוחזרת לבקשות דרך ה-middleware למטה
+app.use('/api', async (_req, res, next) => {
+    try {
+        await dbReady
+        next()
+    } catch (error) {
+        console.error('Failed to initialize database', error)
+        res.status(500).json({ error: 'שגיאה באתחול מסד הנתונים' })
+    }
+})
+
 app.use('/api/teachers', teacherRoutes)
 app.use('/api/pupils', pupilRoutes)
 app.use('/api/auth', authRoutes)
@@ -103,13 +128,17 @@ async function initDb() {
     `
 }
 
-const port = Number(process.env.PORT) || 3000
+export default app
 
-initDb()
-    .then(() => {
-        app.listen(port, () => console.log(`Server listening on port ${port}`))
-    })
-    .catch(error => {
-        console.error('Failed to initialize database', error)
-        process.exit(1)
-    })
+// האזנה לפורט מקומית בלבד; ב-Vercel האפליקציה רצה כ-serverless function
+if (!process.env.VERCEL) {
+    const port = Number(process.env.PORT) || 3000
+    dbReady
+        .then(() => {
+            app.listen(port, () => console.log(`Server listening on port ${port}`))
+        })
+        .catch(error => {
+            console.error('Failed to initialize database', error)
+            process.exit(1)
+        })
+}

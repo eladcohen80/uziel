@@ -1,6 +1,7 @@
 import { authFetch } from './api'
+import { API_BASE } from './config'
 import type { Teacher } from '../types/Teacher'
-const API_URL = '/api/teachers'
+const API_URL = `${API_BASE}/api/teachers`
 
 export async function getTeachers(): Promise<Teacher[]> {
   const response = await authFetch(API_URL)
