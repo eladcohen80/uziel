@@ -157,6 +157,35 @@ button.danger:hover {
   align-self: flex-start;
 }
 
+/* שדה סיסמה עם עין לחיצה */
+.password-wrap {
+  position: relative;
+  display: flex;
+}
+
+.password-wrap input {
+  padding-inline-end: 44px;
+}
+
+.eye-toggle {
+  position: absolute;
+  inset-inline-end: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  align-self: center;
+  padding: 6px;
+  background: none;
+  border-radius: 6px;
+  color: var(--text-h);
+  display: flex;
+  touch-action: none;
+  user-select: none;
+}
+
+.eye-toggle:hover {
+  background: var(--accent-bg);
+}
+
 .form-actions {
   display: flex;
   gap: 8px;

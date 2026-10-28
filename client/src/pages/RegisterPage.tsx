@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
+import PasswordInput from '../components/PasswordInput'
 import { register } from '../services/authService'
 import { getAvailableTeachers } from '../services/teacherService'
 import { classLabel } from '../utils/grades'
@@ -48,7 +49,7 @@ export default function RegisterPage() {
         </label>
         <label>
           סיסמה (לפחות 6 תווים)
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} minLength={6} required />
+          <PasswordInput value={password} onChange={e => setPassword(e.target.value)} minLength={6} required />
         </label>
         <label>
           מורה / בעל תפקיד

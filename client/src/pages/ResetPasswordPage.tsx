@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Navbar from '../components/Navbar'
+import PasswordInput from '../components/PasswordInput'
 import { resetPassword } from '../services/authService'
 
 export default function ResetPasswordPage() {
@@ -34,11 +35,11 @@ export default function ResetPasswordPage() {
         <form className="form" onSubmit={handleSubmit}>
           <label>
             סיסמה חדשה (לפחות 6 תווים)
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} minLength={6} required />
+            <PasswordInput value={password} onChange={e => setPassword(e.target.value)} minLength={6} required />
           </label>
           <label>
             אימות סיסמה
-            <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} minLength={6} required />
+            <PasswordInput value={confirm} onChange={e => setConfirm(e.target.value)} minLength={6} required />
           </label>
           {error && <p className="form-error">{error}</p>}
           <button type="submit">עדכון סיסמה</button>

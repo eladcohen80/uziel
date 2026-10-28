@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
+import PasswordInput from '../components/PasswordInput'
 import { login } from '../services/authService'
 
 export default function LoginPage() {
@@ -31,7 +32,7 @@ export default function LoginPage() {
         </label>
         <label>
           סיסמה
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+          <PasswordInput value={password} onChange={e => setPassword(e.target.value)} required />
         </label>
         {error && <p className="form-error">{error}</p>}
         <button type="submit">התחבר</button>
