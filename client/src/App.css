@@ -64,14 +64,60 @@ body {
   color: var(--primary);
 }
 
-.navbar button,
-.navbar-auth {
-  margin-inline-start: auto;
+.navbar-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
 }
 
 .navbar-auth {
+  margin-inline-start: auto;
   display: flex;
   gap: 8px;
+}
+
+/* כפתור המבורגר - מוצג רק במובייל */
+.hamburger {
+  display: none;
+  padding: 8px;
+  background: none;
+  color: var(--text-h);
+  border-radius: 8px;
+}
+
+.hamburger:hover {
+  background: var(--accent-bg);
+}
+
+@media (max-width: 700px) {
+  .hamburger {
+    display: flex;
+  }
+
+  .navbar-links {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    flex-basis: 100%;
+    padding-top: 8px;
+  }
+
+  .navbar-links.open {
+    display: flex;
+  }
+
+  .navbar-links a,
+  .navbar-links button {
+    text-align: start;
+  }
+
+  .navbar-auth {
+    margin-inline-start: 0;
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .form-error {
