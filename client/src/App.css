@@ -32,8 +32,17 @@ body {
   letter-spacing: normal;
 }
 
+.home-subtitle {
+  margin: 0 0 24px;
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--text-h);
+}
+
 .subtitle {
   font-size: 20px;
+  line-height: 1.6;
+  max-width: 640px;
 }
 
 /* Navbar */
