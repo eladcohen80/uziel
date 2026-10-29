@@ -32,6 +32,14 @@ body {
   letter-spacing: normal;
 }
 
+.home-page {
+  text-align: center;
+}
+
+.home-page .subtitle {
+  margin-inline: auto;
+}
+
 .home-subtitle {
   margin: 0 0 24px;
   font-size: 24px;

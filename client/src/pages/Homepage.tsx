@@ -4,7 +4,7 @@ import logo from '../assets/uziel-logo.png'
 export default function Homepage() {
 
   return (
-    <div className="page">
+    <div className="page home-page">
       <Navbar />
       <h1>מיפוי מענים לתלמידים</h1>
       <h2 className="home-subtitle">בי"ס עוזיאל - קירית שמונה</h2>
