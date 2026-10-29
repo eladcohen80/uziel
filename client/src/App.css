@@ -21,6 +21,10 @@ body::before {
   z-index: -1;
   background: url('./assets/uziel-bg.png') center / cover no-repeat;
   pointer-events: none;
+  /* במובייל ה-viewport צר וגבוה - מכסים לפי גובה כדי שהתמונה תמלא את כל המסך */
+  @media (max-width: 700px) {
+    background-size: auto 100%;
+  }
 }
 
 #root {
