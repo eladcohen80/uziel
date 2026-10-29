@@ -13,7 +13,8 @@ import './App.css'
 import AutoLogoutHandler from './components/AutoLogoutHandler'
 function App() {
   return (
-    <AutoLogoutHandler>
+    <>
+      <AutoLogoutHandler />
       <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
@@ -27,7 +28,8 @@ function App() {
       <Route path="/pupilForm" element={<ProtectedRoute><PupilFormPage /></ProtectedRoute>} />
       <Route path="/pupilForm/:id" element={<ProtectedRoute><PupilFormPage /></ProtectedRoute>} />
       </Routes>
-    </AutoLogoutHandler>
+    </>
+
   )
 }
 
