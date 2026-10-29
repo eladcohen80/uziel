@@ -2,15 +2,17 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authFetch } from '../services/api'; // ודא שהנתיב תקין אצלך
 
-function AutoLogoutHandler() {
+function AutoLogoutHandler(){
   const navigate = useNavigate();
   
+  // נשמור את הטיימרים בתוך Refs יציבים כדי שלא יתבלבלו ברנדורים
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const logoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  
-  // זמני בדיקה (שנה ל-12 ו-15 דקות כשאתה מסיים לבדוק)
-  const REFRESH_TIME = 0.5 * 60 * 1000; // 30 שניות לטסט / 12 דקות לייצור
-  const LOGOUT_TIME = 1 * 60 * 1000;   // 60 שניות לטסט / 15 דקות לייצור
+  const lastRefreshTimeRef = useRef<number>(0);
+
+  // זמני הבדיקה שלך (חצי דקה ודקה)
+  const REFRESH_TIME = 0.5 * 60 * 1000; // 30 שניות
+  const LOGOUT_TIME = 1 * 60 * 1000;   // 60 שניות
 
   const handleLogout = (): void => {
     localStorage.removeItem('token'); 
@@ -20,8 +22,6 @@ function AutoLogoutHandler() {
 
   const handleRefreshToken = async (): Promise<void> => {
     try {
-      // ברגע שהטיימר של הריענון מופעל, זה אומר שהמשתמש שרד באפליקציה חצי מהזמן (או 12 דקות)
-      // אנחנו קוראים לשרת כדי לקבל טוקן רענן לעוד 15 דקות בשרת
       const response = await authFetch('/api/auth/refresh-token', {
         method: 'POST',
         headers: {
@@ -38,28 +38,31 @@ function AutoLogoutHandler() {
     }
   };
 
-  // פונקציית האיפוס שרצה בכל פעם שהמשתמש מזיז עכבר, מקליד או לוחץ
-  const resetTimers = (): void => {
-    // 1. מנקים את השעונים הקודמים לחלוטין
-    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
-    if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
-
-    // 2. קובעים טיימר ריענון: הוא ירוץ רק אם המשתמש לא נגע בכלום במשך חצי מהזמן (או 12 דקות)
-    // הערה: בגלל שכל תזוזה מאפסת את השעונים, הריענון יתבצע רק פעם אחת בתוך חלון הזמן הזה
-    refreshTimerRef.current = setTimeout(handleRefreshToken, REFRESH_TIME);
-    
-    // 3. קובעים את שעון הניתוק הסופי (דקה אחת או 15 דקות)
-    logoutTimerRef.current = setTimeout(handleLogout, LOGOUT_TIME);
-  };
-
   useEffect(() => {
-    // רשימת האירועים שמגדירים פעילות (כולל mousemove)
+    // פונקציית האיפוס מוגדרת פה בפנים כדי למנוע Closures קפואים
+    const resetTimers = (): void => {
+      // 1. ניקוי אקטיבי ומיידי של הטיימרים הקודמים
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+      if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
+
+      const now = Date.now();
+      // בדיקה חכמה: מבקשים ריענון מהשרת רק אם עבר לפחות זמן ה-REFRESH_TIME מהריענון האחרון
+      // זה מונע הצפה של השרת בבקשות בכל מילישנייה של תזוזת עכבר
+      if (now - lastRefreshTimeRef.current >= REFRESH_TIME) {
+        lastRefreshTimeRef.current = now;
+        handleRefreshToken();
+      }
+
+      // 2. קביעת טיימר הניתוק הסופי מחדש
+      logoutTimerRef.current = setTimeout(handleLogout, LOGOUT_TIME);
+    };
+
     const events: string[] = ['mousemove', 'keypress', 'click', 'scroll'];
 
-    // הפעלה ראשונית של הטיימרים בעליית הקומפוננטה
+    // הפעלה ראשונית
     resetTimers();
 
-    // כל אירוע מפעיל ישירות את ה-resetTimers ומאפס את שעון הדקה קדימה!
+    // רישום האירועים
     events.forEach(event => window.addEventListener(event, resetTimers));
 
     // ניקוי מלא בעת עזיבה
