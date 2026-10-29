@@ -1,18 +1,16 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authFetch } from '../services/api';
+import { authFetch } from '../services/api'; // ודא שהנתיב תקין אצלך
 
-function AutoLogoutHandler(){
+function AutoLogoutHandler() {
   const navigate = useNavigate();
   
-  // הגדרת משתני ה-Ref לשני הטיימרים ולמעקב הפעילות
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const logoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isUserActiveRef = useRef<boolean>(false);
-
-  // הזמנים הרשמיים שלך (12 דקות לריענון, 15 דקות להתנתקות)
-  const REFRESH_TIME = 0.5 * 60 * 1000; 
-  const LOGOUT_TIME = 1 * 60 * 1000;  
+  
+  // זמני בדיקה (שנה ל-12 ו-15 דקות כשאתה מסיים לבדוק)
+  const REFRESH_TIME = 0.5 * 60 * 1000; // 30 שניות לטסט / 12 דקות לייצור
+  const LOGOUT_TIME = 1 * 60 * 1000;   // 60 שניות לטסט / 15 דקות לייצור
 
   const handleLogout = (): void => {
     localStorage.removeItem('token'); 
@@ -20,15 +18,10 @@ function AutoLogoutHandler(){
     alert('התנתקת מהמערכת עקב חוסר פעילות של 15 דקות.');
   };
 
-  // כאן הוא מבקש את הטוקן מחדש!
   const handleRefreshToken = async (): Promise<void> => {
-    // אם עברו 12 דקות והמשתמש לא הזיז עכבר/הקליד, הדגל הוא false -> הפונקציה עוצרת ולא מציקה לשרת
-    if (!isUserActiveRef.current) {
-      return;
-    }
-
     try {
-      // אם המשתמש כן הזיז עכבר במהלך ה-12 דקות, נשלחת בקשה לשרת לקבלת טוקן חדש
+      // ברגע שהטיימר של הריענון מופעל, זה אומר שהמשתמש שרד באפליקציה חצי מהזמן (או 12 דקות)
+      // אנחנו קוראים לשרת כדי לקבל טוקן רענן לעוד 15 דקות בשרת
       const response = await authFetch('/api/auth/refresh-token', {
         method: 'POST',
         headers: {
@@ -38,51 +31,44 @@ function AutoLogoutHandler(){
 
       if (response && response.ok) {
         const data = await response.json();
-        localStorage.setItem('token', data.token); // שמירת הטוקן החדש שקיבלנו מהשרת
-        
-        // איפוס דגל הפעילות והפעלה מחדש של הטיימרים ל-15 דקות הבאות
-        isUserActiveRef.current = false;
-        resetTimers();
+        localStorage.setItem('token', data.token);
       }
     } catch (error) {
       console.error('Failed to auto-refresh token:', error);
     }
   };
 
-  // פונקציית האיפוס שמפעילה מחדש את שני השעונים במקביל
+  // פונקציית האיפוס שרצה בכל פעם שהמשתמש מזיז עכבר, מקליד או לוחץ
   const resetTimers = (): void => {
+    // 1. מנקים את השעונים הקודמים לחלוטין
     if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
     if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
 
-    // 1. שעון הריענון מתעורר בדקה ה-12 ובודק אם צריך לבקש טוקן חדש
+    // 2. קובעים טיימר ריענון: הוא ירוץ רק אם המשתמש לא נגע בכלום במשך חצי מהזמן (או 12 דקות)
+    // הערה: בגלל שכל תזוזה מאפסת את השעונים, הריענון יתבצע רק פעם אחת בתוך חלון הזמן הזה
     refreshTimerRef.current = setTimeout(handleRefreshToken, REFRESH_TIME);
     
-    // 2. שעון ההתנתקות ירוץ עד הדקה ה-15 וינתק אם אף אחד לא איפס אותו
+    // 3. קובעים את שעון הניתוק הסופי (דקה אחת או 15 דקות)
     logoutTimerRef.current = setTimeout(handleLogout, LOGOUT_TIME);
   };
 
   useEffect(() => {
-    // בכל פעם שיש תנועת עכבר, לחיצה או גלילה - אנחנו רק מדליקים את הדגל ל-true!
-    // אנחנו לא מאפסים את ה-setTimeout בכל שנייה (מה שגרם ללולאה הקודמת בטסט)
-    const recordActivity = (): void => {
-      isUserActiveRef.current = true;
-    };
-
+    // רשימת האירועים שמגדירים פעילות (כולל mousemove)
     const events: string[] = ['mousemove', 'keypress', 'click', 'scroll'];
 
-    // הפעלה ראשונית של הטיימרים
+    // הפעלה ראשונית של הטיימרים בעליית הקומפוננטה
     resetTimers();
 
-    // האזנה לאירועים
-    events.forEach(event => window.addEventListener(event, recordActivity));
+    // כל אירוע מפעיל ישירות את ה-resetTimers ומאפס את שעון הדקה קדימה!
+    events.forEach(event => window.addEventListener(event, resetTimers));
 
-    // ניקוי
+    // ניקוי מלא בעת עזיבה
     return () => {
       if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
       if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
-      events.forEach(event => window.removeEventListener(event, recordActivity));
+      events.forEach(event => window.removeEventListener(event, resetTimers));
     };
-  }, []);
+  }, [navigate]);
 
   return null;
 }
