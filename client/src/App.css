@@ -311,8 +311,14 @@ button.danger:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  /* גלילה אופקית של הטבלה לא תגרור גלילה של כל העמוד */
+  /* המסגרת לא רחבה מהעמוד - הגלילה האופקית נשארת בתוכה */
+  max-width: 100%;
   overscroll-behavior-x: contain;
+}
+
+/* ב-RTL הגלילה האופקית מתחילה מהקצה הימני כברירת מחדל */
+.table-wrap table {
+  direction: rtl;
 }
 
 table {
@@ -345,6 +351,13 @@ td:not(:first-child):not(:nth-child(2)):not(.actions) {
   td {
     padding: 12px 10px;
     font-size: 14px;
+  }
+
+  /* עמודת הפעולות לא דביקה במובייל - היא נגללת יחד עם הטבלה */
+  .table-wrap thead th:last-child,
+  .table-wrap td.actions {
+    position: static;
+    box-shadow: none;
   }
 }
 
