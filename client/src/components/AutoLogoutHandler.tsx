@@ -1,15 +1,18 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+// ודא שהנתיב היחסי לקובץ ה-api.ts שלך מדויק
+import { authFetch } from '../services/api';
 
-// שינוי הגדרת הטיפוס לפונקציה רגילה שמחזירה JSX.Element או null
+
 function AutoLogoutHandler(){
   const navigate = useNavigate();
   
+  // 1. הגדרת ה-Refs בתוך גוף הפונקציה
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const logoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isUserActiveRef = useRef<boolean>(false);
 
-  // זמנים לבדיקה (חצי דקה ודקה) - תחזיר ל-25 ו-30 דקות אחרי שתסיים לבדוק
+  // זמנים לבדיקה מהירה (חצי דקה ודקה)
   const REFRESH_TIME = 0.5 * 60 * 1000; 
   const LOGOUT_TIME = 1 * 60 * 1000;   
 
@@ -20,16 +23,14 @@ function AutoLogoutHandler(){
   };
 
   const handleRefreshToken = async (): Promise<void> => {
+    // הבדיקה קוראת כאן בתוך הפונקציה בהצלחה
     if (!isUserActiveRef.current) return;
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-      const response = await fetch('/api/auth/refresh-token', {
+      // שימוש ב-authFetch המרכזי שלך שמכיר את ה-Base URL
+      const response = await authFetch('/api/auth/refresh-token', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -37,10 +38,10 @@ function AutoLogoutHandler(){
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('token', data.token);
+        
+        // איפוס הדגל והפעלת הסבב הבא
         isUserActiveRef.current = false;
         resetTimers();
-      } else {
-        handleLogout();
       }
     } catch (error) {
       console.error('Failed to auto-refresh token:', error);
@@ -60,7 +61,7 @@ function AutoLogoutHandler(){
   };
 
   useEffect(() => {
-    // השארנו זמנית בלי mousemove לצורך הבדיקה הנוחה של הדקה
+    // מאזינים ללחיצות, גלילות והקלדות (בלי mousemove זמנית לצורך הבדיקה)
     const events: string[] = ['keypress', 'click', 'scroll'];
 
     resetTimers();
@@ -74,7 +75,7 @@ function AutoLogoutHandler(){
     };
   }, []);
 
-  return null; // מחזיר null בצורה תקינה שמתקבלת על ידי TypeScript
+  return null;
 }
 
 export default AutoLogoutHandler;
