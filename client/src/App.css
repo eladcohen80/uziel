@@ -313,6 +313,8 @@ button.danger:hover {
   box-shadow: var(--shadow);
   /* המסגרת לא רחבה מהעמוד - הגלילה האופקית נשארת בתוכה */
   max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
   overscroll-behavior-x: contain;
 }
 
@@ -326,6 +328,12 @@ table {
   border-collapse: collapse;
   font-size: 16px;
   color: var(--text-h);
+}
+
+/* הטבלה לא קטנה מהמסגרת, אבל יכולה להיות רחבה יותר - ואז הגלילה בתוך המסגרת */
+.table-wrap table {
+  min-width: 100%;
+  width: max-content;
 }
 
 th,
@@ -358,6 +366,12 @@ td:not(:first-child):not(:nth-child(2)):not(.actions) {
   .table-wrap td.actions {
     position: static;
     box-shadow: none;
+  }
+
+  /* שם וכיתה יכולים להישבר במובייל כדי לצמצם את רוחב הטבלה */
+  td:first-child,
+  td:nth-child(2) {
+    white-space: normal;
   }
 }
 
