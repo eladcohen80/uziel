@@ -7,12 +7,15 @@ import { API_BASE } from '../services/config';
 function AutoLogoutHandler() {
   const navigate = useNavigate();
 
-  const logoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastActivityRef = useRef<number>(0); // מאותחל ב-useEffect בעת הטעינה
 
-  const REFRESH_TIME = 0.5 * 60 * 1000; // 0.5 דקות
-  const LOGOUT_TIME = 1 * 60 * 1000;   // 1 דקות
+  // ערכי בדיקה - להחזיר ל-25 ו-30 דקות לאחר הבדיקה
+  const REFRESH_TIME = 12 * 60 * 1000; // 12 דקות
+  const LOGOUT_TIME = 15 * 60 * 1000;   // 15 דקות
+  const CHECK_INTERVAL = 5 * 1000;     // בדיקת חוסר פעילות כל 5 שניות
 
   const handleLogout = useCallback((): void => {
+    if (!localStorage.getItem('token')) return; // כבר מנותק
     logout();
     navigate('/login');
     alert('התנתקת מהמערכת עקב חוסר פעילות.');
@@ -40,27 +43,38 @@ function AutoLogoutHandler() {
     return () => clearInterval(refreshInterval);
   }, [handleRefreshToken, REFRESH_TIME]);
 
-  // עטיפת הפונקציה ב-useCallback מונעת ממנה להיווצר מחדש בכל רנדור
-  const resetLogoutTimer = useCallback((): void => {
-    if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
-    logoutTimerRef.current = setTimeout(handleLogout, LOGOUT_TIME);
-  }, [handleLogout, LOGOUT_TIME]);
-
+  // זיהוי חוסר פעילות לפי חותמת הזמן של הפעילות האחרונה, עם בדיקה תקופתית.
+  // אמין גם כשהדפדפן מעכב טיימרים בטאב ברקע, בניגוד ל-setTimeout בודד
   useEffect(() => {
-    const events: string[] = ['mousemove', 'keypress', 'click', 'scroll'];
+    const events: string[] = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
 
-    // הפעלה ראשונית
-    resetLogoutTimer();
-
-    // מאזינים לאירועים שמפעילים את פונקציית האיפוס היציבה
-    events.forEach(event => window.addEventListener(event, resetLogoutTimer));
-
-    // ניקוי מלא בעת עזיבה
-    return () => {
-      if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
-      events.forEach(event => window.removeEventListener(event, resetLogoutTimer));
+    const onActivity = (): void => {
+      lastActivityRef.current = Date.now();
     };
-  }, [resetLogoutTimer]);
+
+    const checkInactivity = (): void => {
+      if (Date.now() - lastActivityRef.current >= LOGOUT_TIME) {
+        handleLogout();
+      }
+    };
+
+    // כשחוזרים לטאב אחרי שהיה מוסתר - בודקים מיד אם עבר זמן ההתנתקות
+    const onVisibilityChange = (): void => {
+      if (document.visibilityState === 'visible') checkInactivity();
+    };
+
+    lastActivityRef.current = Date.now();
+
+    events.forEach(event => window.addEventListener(event, onActivity));
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    const interval = setInterval(checkInactivity, CHECK_INTERVAL);
+
+    return () => {
+      events.forEach(event => window.removeEventListener(event, onActivity));
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      clearInterval(interval);
+    };
+  }, [handleLogout, LOGOUT_TIME, CHECK_INTERVAL]);
 
   return null;
 }

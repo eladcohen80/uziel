@@ -84,7 +84,7 @@ async function initDb() {
             END IF;
         END $$
     `
-    // בעלי תפקידים (מנהלת/יועצת) אינם משויכים לכיתה - בדיוק אחד מ-grade/position
+    // בעלי תפקידים (מנהלת/יועצת/רכז) אינם משויכים לכיתה - בדיוק אחד מ-grade/position
     await sql`ALTER TABLE teachers ALTER COLUMN grade DROP NOT NULL`
     await sql`ALTER TABLE teachers ADD COLUMN IF NOT EXISTS position TEXT`
     await sql`

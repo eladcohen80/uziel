@@ -30,7 +30,7 @@ export const register = async (req: Request, res: Response) => {
         if (teacher.length === 0) {
             return res.status(409).json({ error: 'המורה לא קיים או שכבר שויך למשתמש' })
         }
-        // בעלת תפקיד (מנהלת/יועצת) מקבלת הרשאות אדמין כדי לראות את כל הכיתות
+        // בעל תפקיד (מנהלת/יועצת/רכז) מקבל הרשאות אדמין כדי לראות את כל הכיתות
         const role = teacher[0].position ? 'admin' : 'user'
         const passwordHash = await bcrypt.hash(password, 10)
         const rows = await sql`

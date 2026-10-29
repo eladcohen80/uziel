@@ -6,7 +6,7 @@ export const CLASSES = [
 const LETTERS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו']
 
 // בעלי תפקידים שאינם משויכים לכיתה
-export const POSITIONS = ['מנהלת', 'יועצת']
+export const POSITIONS = ['מנהלת', 'יועצת', 'רכז המרחב השלם']
 
 export function isValidPosition(value: unknown): value is string {
     return typeof value === 'string' && POSITIONS.includes(value)
