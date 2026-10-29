@@ -365,6 +365,8 @@ table {
   border-collapse: collapse;
   font-size: 16px;
   color: var(--text-h);
+  border-radius: 12px;       /* קובע את רמת עיגול הפינות (ניתן לשנות את המספר) */
+  overflow: hidden;  
 }
 
 th,
