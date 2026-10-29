@@ -13,6 +13,11 @@ body {
   background-color: var(--page-bg);
 }
 
+/* שריון מקום קבוע לסרגל הגלילה - הנאבאר לא משתנה בין דפים גבוהים לנמוכים */
+html {
+  scrollbar-gutter: stable;
+}
+
 /* רקע קבוע דרך pseudo-element - background-attachment: fixed לא נתמך במובייל */
 body::before {
   content: '';
@@ -47,6 +52,9 @@ body::before {
   margin: 0 auto;
   /* .page הוא flex item של #root - בלי min-width:0 תוכן רחב (טבלה) מרחיב את העמוד והנאבאר */
   min-width: 0;
+  /* רוחב קבוע: לא גדל מעבר ל-viewport גם אם התוכן (טבלה) רחב יותר */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* במובייל - מונע מילדים רחבים (טבלאות) להרחיב את העמוד */
@@ -353,6 +361,16 @@ button.danger:hover {
   box-shadow: var(--shadow);
   /* טבלה רחבה גוללת בתוך הריבוע במקום להרחיב את העמוד והנאבאר */
   overflow-x: auto;
+  /* הריבוע לא גדל מעבר לרוחב העמוד - הטבלה גוללת בתוכו */
+  max-width: 100%;
+}
+
+/* בדסקטופ הטבלה לא דוחפת את הריבוע - היא גוללת בתוכו */
+@media (min-width: 701px) {
+  .table-wrap table {
+    width: max-content;
+    min-width: 100%;
+  }
 }
 
 /* במובייל - התאמות נוספות לגלילה האופקית של הטבלה */
