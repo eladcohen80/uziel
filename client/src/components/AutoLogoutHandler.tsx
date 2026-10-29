@@ -10,8 +10,8 @@ function AutoLogoutHandler() {
   const lastRefreshTimeRef = useRef<number>(0);
 
   // זמני בדיקה מהירה (חצי דקה ודקה)
-  const REFRESH_TIME = 0.5 * 60 * 1000; // 30 שניות
-  const LOGOUT_TIME = 1 * 60 * 1000;   // 60 שניות
+  const REFRESH_TIME = 25 * 60 * 1000; // 25 דקות
+  const LOGOUT_TIME = 30 * 60 * 1000;   // 30 דקות
 
   const handleLogout = useCallback((): void => {
     localStorage.removeItem('token'); 
