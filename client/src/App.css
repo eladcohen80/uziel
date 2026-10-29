@@ -319,22 +319,20 @@ button.danger:hover {
 }
 
 .table-wrap {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  /* המסגרת ננעלת לרוחב העמוד - הגלילה האופקית נשארת בתוכה בלבד */
-  max-width: 100%;
-  width: 100%;
-  box-sizing: border-box;
-  overscroll-behavior-x: contain;
 }
 
-/* ב-RTL הגלילה האופקית מתחילה מהקצה הימני כברירת מחדל */
-.table-wrap table {
-  direction: rtl;
+/* גלילה אופקית של הטבלה - במובייל בלבד; בדסקטופ יש מקום לכל הטבלה */
+@media (max-width: 700px) {
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    overscroll-behavior-x: contain;
+  }
 }
 
 table {
@@ -342,11 +340,6 @@ table {
   border-collapse: collapse;
   font-size: 16px;
   color: var(--text-h);
-}
-
-/* הטבלה תמיד לפחות ברוחב המסגרת; אם התוכן רחב יותר - הגלילה בתוך המסגרת */
-.table-wrap table {
-  min-width: 100%;
 }
 
 th,
@@ -372,13 +365,6 @@ td:not(:first-child):not(:nth-child(2)):not(.actions) {
   td {
     padding: 12px 10px;
     font-size: 14px;
-  }
-
-  /* עמודת הפעולות לא דביקה במובייל - מגיעים אליה בגלילה */
-  .table-wrap thead th:last-child,
-  .table-wrap td.actions {
-    position: static;
-    box-shadow: none;
   }
 }
 
@@ -424,6 +410,15 @@ td.actions {
     position: sticky;
     left: 0;
     box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* עמודת הפעולות לא דביקה במובייל - מגיעים אליה בגלילה */
+@media (max-width: 700px) {
+  .table-wrap thead th:last-child,
+  .table-wrap td.actions {
+    position: static;
+    box-shadow: none;
   }
 }
 
