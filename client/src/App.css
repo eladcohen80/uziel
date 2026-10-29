@@ -236,6 +236,8 @@ button.danger:hover {
   flex-direction: column;
   gap: 14px;
   max-width: 520px;
+  /* טפסים צרים מהעמוד ממורכזים ולא דבוקים לימין */
+  margin-inline: auto;
   padding: 24px;
   background: var(--surface);
   border: 1px solid var(--border);
