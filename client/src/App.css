@@ -50,9 +50,9 @@ body::before {
 /* במובייל - מונע מילדים רחבים (טבלאות) להרחיב את העמוד */
 @media (max-width: 700px) {
   .page, body, main { 
-    padding-left: 5px !important;
-    padding-right: 5px !important;
-    box-sizing: border-box;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
   }
 
 }
@@ -344,6 +344,8 @@ button.danger:hover {
     box-sizing: border-box;
     contain: inline-size;
     overscroll-behavior-x: contain;
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
   /* הטבלה לוקחת את הרוחב הטבעי של התוכן - החלק הימני מוצג, השאר בגלילה שמאלה */
