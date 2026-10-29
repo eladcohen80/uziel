@@ -10,7 +10,7 @@ function signToken(user: { user_id: number; email: string; role: string }) {
     if (!secret) {
         throw new Error('JWT_SECRET is not set')
     }
-    return jwt.sign({ user_id: user.user_id, email: user.email, role: user.role }, secret, { expiresIn: '7d' })
+    return jwt.sign({ user_id: user.user_id, email: user.email, role: user.role }, secret, { expiresIn: '1m' })
 }
 
 export const register = async (req: Request, res: Response) => {
@@ -125,5 +125,35 @@ export const login = async (req: Request, res: Response) => {
         res.json({ token: signToken(user), user })
     } catch (error) {
         res.status(500).json({ error: 'Failed to login' })
+    }
+}
+export const refreshToken = async (req: Request, res: Response) => {
+    const authHeader = req.headers.authorization
+    const token = authHeader && authHeader.split(' ')[1]
+
+    if (!token) {
+        return res.status(401).json({ error: 'Token missing' })
+    }
+
+    const secret = process.env.JWT_SECRET
+    if (!secret) {
+        return res.status(500).json({ error: 'JWT_SECRET is not set' })
+    }
+
+    try {
+        // אימות הטוקן הקיים
+        const decoded = jwt.verify(token, secret) as { user_id: number; email: string; role: string }
+        
+        // יצירת טוקן חדש לחצי שעה נוספת עבור אותו משתמש
+        const newToken = signToken({
+            user_id: decoded.user_id,
+            email: decoded.email,
+            role: decoded.role
+        })
+
+        res.json({ token: newToken })
+    } catch (error) {
+        // אם הטוקן פג תוקף לחלוטין או לא תקין, השרת יחזיר 401 והריאקט יבצע התנתקות
+        res.status(401).json({ error: 'Invalid or expired token' })
     }
 }
