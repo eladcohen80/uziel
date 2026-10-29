@@ -22,7 +22,7 @@ export default function LoginPage() {
 
   return (
     <div className="page">
-      <h1>מערכת ניהול מענים - בי"ס עוזיאל</h1>
+      <h1>מערכת מיפוי מענים - בי"ס עוזיאל</h1>
       <h2>התחברות</h2>
       <form className="form" onSubmit={handleSubmit}>
         <label>
