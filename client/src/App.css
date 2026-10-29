@@ -23,6 +23,17 @@ body::before {
   pointer-events: none;
 }
 
+/* בדפדפנים שתומכים ב-fixed (דסקטופ) - הרקע ישירות על body */
+@supports (background-attachment: fixed) {
+  body {
+    background: var(--page-bg) url('./assets/uziel-bg.png') center / cover fixed no-repeat;
+  }
+
+  body::before {
+    content: none;
+  }
+}
+
 #root {
   width: 100%;
   max-width: 1600px;
@@ -318,7 +329,6 @@ button.danger:hover {
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;
-  contain: inline-size;
   overscroll-behavior-x: contain;
 }
 
@@ -334,11 +344,9 @@ table {
   color: var(--text-h);
 }
 
-/* הטבלה לא קטנה מהמסגרת, אבל יכולה להיות רחבה יותר - ואז הגלילה בתוך המסגרת */
+/* הטבלה תמיד לפחות ברוחב המסגרת; אם התוכן רחב יותר - הגלילה בתוך המסגרת */
 .table-wrap table {
   min-width: 100%;
-  width: max-content;
-  max-width: none;
 }
 
 th,
@@ -366,17 +374,11 @@ td:not(:first-child):not(:nth-child(2)):not(.actions) {
     font-size: 14px;
   }
 
-  /* עמודת הפעולות לא דביקה במובייל - היא נגללת יחד עם הטבלה */
+  /* עמודת הפעולות לא דביקה במובייל - מגיעים אליה בגלילה */
   .table-wrap thead th:last-child,
   .table-wrap td.actions {
     position: static;
     box-shadow: none;
-  }
-
-  /* שם וכיתה יכולים להישבר במובייל כדי לצמצם את רוחב הטבלה */
-  td:first-child,
-  td:nth-child(2) {
-    white-space: normal;
   }
 }
 
@@ -415,12 +417,14 @@ td.actions {
   white-space: nowrap;
 }
 
-/* עמודת הפעולות דביקה לקצה כדי שלא תיחתך כשהטבלה גוללת */
-.table-wrap thead th:last-child,
-.table-wrap td.actions {
-  position: sticky;
-  left: 0;
-  box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.15);
+/* עמודת הפעולות דביקה לקצה בדסקטופ בלבד; במובייל מגיעים אליה בגלילה */
+@media (min-width: 701px) {
+  .table-wrap thead th:last-child,
+  .table-wrap td.actions {
+    position: sticky;
+    left: 0;
+    box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.15);
+  }
 }
 
 .table-wrap thead th:last-child {
