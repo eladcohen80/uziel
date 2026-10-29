@@ -10,7 +10,7 @@ function signToken(user: { user_id: number; email: string; role: string }) {
     if (!secret) {
         throw new Error('JWT_SECRET is not set')
     }
-    return jwt.sign({ user_id: user.user_id, email: user.email, role: user.role }, secret, { expiresIn: '5m' })
+    return jwt.sign({ user_id: user.user_id, email: user.email, role: user.role }, secret, { expiresIn: '30m' })
 }
 
 export const register = async (req: Request, res: Response) => {
