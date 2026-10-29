@@ -50,8 +50,9 @@ body::before {
 /* במובייל - מונע מילדים רחבים (טבלאות) להרחיב את העמוד */
 @media (max-width: 700px) {
   .page, body, main { 
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    box-sizing: border-box;
     width: 100% !important;
   }
 
@@ -334,19 +335,21 @@ button.danger:hover {
 
 /* גלילה אופקית של הטבלה - במובייל בלבד; בדסקטופ יש מקום לכל הטבלה */
 @media (max-width: 700px) {
-  .table-wrap {
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    /* המסגרת מוגבלת לרוחב המסך - הגלילה נשארת בתוכה בלבד */
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    contain: inline-size;
-    overscroll-behavior-x: contain;
-    padding-left: 10px;
-    padding-right: 10px;
-  }
+  .table-wrap { 
+    display: block; 
+    width: 100%;             
+    max-width: 100%;         
+    box-sizing: border-box; 
+    
+    /* מפעיל את הגלילה בדיוק בגבולות הריבוע הלבן */
+    overflow-x: auto; 
+    -webkit-overflow-scrolling: touch; 
+    overscroll-behavior-x: contain; 
+    
+    /* חשוב: ללא padding בכלל כדי למנוע את הפסים הלבנים בקצוות! */
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  } 
 
   /* הטבלה לוקחת את הרוחב הטבעי של התוכן - החלק הימני מוצג, השאר בגלילה שמאלה */
   .table-wrap table {
