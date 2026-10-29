@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import Navbar from '../components/Navbar'
 import PasswordInput from '../components/PasswordInput'
 import { register } from '../services/authService'
 import { getAvailableTeachers } from '../services/teacherService'
