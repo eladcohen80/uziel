@@ -21,10 +21,6 @@ body::before {
   z-index: -1;
   background: url('./assets/uziel-bg.png') center / cover no-repeat;
   pointer-events: none;
-  /* במובייל ה-viewport צר וגבוה - מכסים לפי גובה כדי שהתמונה תמלא את כל המסך */
-  @media (max-width: 700px) {
-    background-size: auto 100%;
-  }
 }
 
 #root {
@@ -315,6 +311,8 @@ button.danger:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+  /* גלילה אופקית של הטבלה לא תגרור גלילה של כל העמוד */
+  overscroll-behavior-x: contain;
 }
 
 table {
@@ -335,6 +333,19 @@ td {
 /* עמודות תוכן רחבות לא נדחסות */
 td:not(:first-child):not(:nth-child(2)):not(.actions) {
   min-width: 140px;
+}
+
+/* במובייל מצמצמים את הרוחב המינימלי כדי שהטבלה לא תרחיב את העמוד */
+@media (max-width: 700px) {
+  td:not(:first-child):not(:nth-child(2)):not(.actions) {
+    min-width: 100px;
+  }
+
+  th,
+  td {
+    padding: 12px 10px;
+    font-size: 14px;
+  }
 }
 
 /* שם וכיתה לא נשברים לשורות */
