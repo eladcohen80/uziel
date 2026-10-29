@@ -1,20 +1,17 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-// ודא שהנתיב היחסי לקובץ ה-api.ts שלך מדויק
-import { authFetch } from '../services/api';
-
+import { authFetch } from '../services/api'; // ודא שהנתיב תקין אצלך
 
 function AutoLogoutHandler(){
   const navigate = useNavigate();
   
-  // 1. הגדרת ה-Refs בתוך גוף הפונקציה
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const logoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isUserActiveRef = useRef<boolean>(false);
 
-  // זמנים לבדיקה מהירה (חצי דקה ודקה)
-  const REFRESH_TIME = 0.5 * 60 * 1000; 
-  const LOGOUT_TIME = 1 * 60 * 1000;   
+  // זמנים מדויקים לבדיקה (חצי דקה ודקה)
+  const REFRESH_TIME = 30 * 1000; // 30 שניות
+  const LOGOUT_TIME = 60 * 1000;  // 60 שניות (דקה אחת)
 
   const handleLogout = (): void => {
     localStorage.removeItem('token'); 
@@ -23,11 +20,12 @@ function AutoLogoutHandler(){
   };
 
   const handleRefreshToken = async (): Promise<void> => {
-    // הבדיקה קוראת כאן בתוך הפונקציה בהצלחה
-    if (!isUserActiveRef.current) return;
+    // אם המשתמש לא היה פעיל, לא מחדשים - ונותנים לטיימר של הדקה (logoutTimerRef) לנתק אותו בסוף
+    if (!isUserActiveRef.current) {
+      return;
+    }
 
     try {
-      // שימוש ב-authFetch המרכזי שלך שמכיר את ה-Base URL
       const response = await authFetch('/api/auth/refresh-token', {
         method: 'POST',
         headers: {
@@ -35,11 +33,11 @@ function AutoLogoutHandler(){
         }
       });
 
-      if (response.ok) {
+      if (response && response.ok) {
         const data = await response.json();
         localStorage.setItem('token', data.token);
         
-        // איפוס הדגל והפעלת הסבב הבא
+        // כאן הקסם: המשתמש היה פעיל, הריענון הצליח -> מאפסים את כל הטיימרים מחדש לדקה הבאה!
         isUserActiveRef.current = false;
         resetTimers();
       }
@@ -49,9 +47,11 @@ function AutoLogoutHandler(){
   };
 
   const resetTimers = (): void => {
+    // ניקוי יסודי של הטיימרים הקודמים כדי שלא ירוצו במקביל
     if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
     if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
 
+    // אתחול מחדש של שני הטיימרים לעתיד
     refreshTimerRef.current = setTimeout(handleRefreshToken, REFRESH_TIME);
     logoutTimerRef.current = setTimeout(handleLogout, LOGOUT_TIME);
   };
@@ -61,7 +61,7 @@ function AutoLogoutHandler(){
   };
 
   useEffect(() => {
-    // מאזינים ללחיצות, גלילות והקלדות (בלי mousemove זמנית לצורך הבדיקה)
+    // מאזינים לאירועים (כרגע ללא mousemove לצורך הבדיקה הנוחה)
     const events: string[] = ['keypress', 'click', 'scroll'];
 
     resetTimers();
