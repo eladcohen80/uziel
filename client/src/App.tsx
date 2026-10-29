@@ -10,10 +10,11 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import './App.css'
-
+import AutoLogoutHandler from './components/AutoLogoutHandler'
 function App() {
   return (
-    <Routes>
+    <AutoLogoutHandler>
+      <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -25,7 +26,8 @@ function App() {
       <Route path="/pupiles" element={<ProtectedRoute><PupilsPage /></ProtectedRoute>} />
       <Route path="/pupilForm" element={<ProtectedRoute><PupilFormPage /></ProtectedRoute>} />
       <Route path="/pupilForm/:id" element={<ProtectedRoute><PupilFormPage /></ProtectedRoute>} />
-    </Routes>
+      </Routes>
+    </AutoLogoutHandler>
   )
 }
 
