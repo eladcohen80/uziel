@@ -10,7 +10,17 @@
 }
 
 body {
-  background: var(--page-bg) url('./assets/uziel-bg.png') center / cover fixed no-repeat;
+  background-color: var(--page-bg);
+}
+
+/* רקע קבוע דרך pseudo-element - background-attachment: fixed לא נתמך במובייל */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: url('./assets/uziel-bg.png') center / cover no-repeat;
+  pointer-events: none;
 }
 
 #root {
