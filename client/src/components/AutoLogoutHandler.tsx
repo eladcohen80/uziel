@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // שינוי הגדרת הטיפוס לפונקציה רגילה שמחזירה JSX.Element או null
-function AutoLogoutHandler(): JSX.Element | null {
+function AutoLogoutHandler(){
   const navigate = useNavigate();
   
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
