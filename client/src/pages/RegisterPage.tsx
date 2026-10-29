@@ -36,8 +36,8 @@ export default function RegisterPage() {
 
   return (
     <div className="page">
-      <Navbar />
-      <h1>הרשמה</h1>
+      <h1>מערכת ניהול מענים - בי"ס עוזיאל</h1>
+      <h2>הרשמה</h2>
       <form className="form" onSubmit={handleSubmit}>
         <label>
           שם משתמש
