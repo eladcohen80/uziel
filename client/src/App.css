@@ -338,7 +338,6 @@ button.danger:hover {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    contain: inline-size;
     overscroll-behavior-x: contain;
   }
 
@@ -381,6 +380,15 @@ td:not(:first-child):not(:nth-child(2)):not(.actions) {
   td {
     padding: 12px 10px;
     font-size: 14px;
+  }
+
+  /* שם וכיתה לא נדחסים מתחת לרוחב סביר */
+  td:first-child {
+    min-width: 110px;
+  }
+
+  td:nth-child(2) {
+    min-width: 70px;
   }
 }
 
