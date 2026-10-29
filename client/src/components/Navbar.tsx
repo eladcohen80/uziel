@@ -29,10 +29,12 @@ export default function Navbar() {
           <line x1="4" y1="17" x2="20" y2="17" />
         </svg>
       </button>
+      {/* במובייל דף הבית מוצג לצד ההמבורגר ולא בתוך התפריט */}
+      {token && <Link to="/" className="navbar-home" onClick={close}>דף הבית</Link>}
       <div className={`navbar-links${open ? ' open' : ''}`}>
         {token && (
           <>
-            <Link to="/" onClick={close}>דף הבית</Link>
+            <Link to="/" className="navbar-home-desktop" onClick={close}>דף הבית</Link>
             <Link to="/teachers" onClick={close}>צוות</Link>
             {isAdmin && <Link to="/teacherForm" onClick={close}>הוספת מורה</Link>}
             <Link to="/pupiles" onClick={close}>תלמידים</Link>

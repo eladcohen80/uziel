@@ -45,6 +45,8 @@ body::before {
   padding: 0 24px 48px;
   max-width: 1600px;
   margin: 0 auto;
+  /* .page הוא flex item של #root - בלי min-width:0 תוכן רחב (טבלה) מרחיב את העמוד והנאבאר */
+  min-width: 0;
 }
 
 /* במובייל - מונע מילדים רחבים (טבלאות) להרחיב את העמוד */
@@ -136,6 +138,16 @@ body::before {
   border-radius: 8px;
 }
 
+/* קישור דף הבית לצד ההמבורגר - מוצג במובייל בלבד */
+.navbar-home {
+  display: none;
+}
+
+/* בדסקטופ דף הבית נשאר בתוך שורת הקישורים */
+.navbar-home-desktop {
+  display: inline-block;
+}
+
 .hamburger:hover {
   background: var(--accent-bg);
 }
@@ -143,6 +155,14 @@ body::before {
 @media (max-width: 700px) {
   .hamburger {
     display: flex;
+  }
+
+  .navbar-home {
+    display: inline-block;
+  }
+
+  .navbar-home-desktop {
+    display: none;
   }
 
   .navbar-links {
@@ -331,20 +351,20 @@ button.danger:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+  /* טבלה רחבה גוללת בתוך הריבוע במקום להרחיב את העמוד והנאבאר */
+  overflow-x: auto;
 }
 
-/* גלילה אופקית של הטבלה - במובייל בלבד; בדסקטופ יש מקום לכל הטבלה */
+/* במובייל - התאמות נוספות לגלילה האופקית של הטבלה */
 @media (max-width: 700px) {
-  .table-wrap { 
-    display: block; 
-    width: 100%;             
-    max-width: 100%;         
-    box-sizing: border-box; 
-    
-    /* מפעיל את הגלילה בדיוק בגבולות הריבוע הלבן */
-    overflow-x: auto; 
-    -webkit-overflow-scrolling: touch; 
-    overscroll-behavior-x: contain; 
+  .table-wrap {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
     
     /* חשוב: ללא padding בכלל כדי למנוע את הפסים הלבנים בקצוות! */
     padding-left: 0 !important;
