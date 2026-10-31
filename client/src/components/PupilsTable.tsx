@@ -12,6 +12,8 @@ export default function PupilsTable() {
     const isAdmin = getStoredUser()?.role === 'admin'
     const [selectedClass, setSelectedClass] = useState('')
     const [search, setSearch] = useState('')
+    const [wideTable, setWideTable] = useState(false)
+    const [selectedPupil, setSelectedPupil] = useState<Pupil | null>(null)
     const query = search.trim().toLowerCase()
     const visiblePupils = pupils.filter(p =>
         (!selectedClass || p.className === selectedClass) &&
@@ -30,6 +32,7 @@ export default function PupilsTable() {
         try {
             await deletePupil(pupil.id)
             setPupils(prev => prev.filter(p => p.id !== pupil.id))
+            setSelectedPupil(null)
         } catch {
             setError('שגיאה במחיקת התלמיד')
         }
@@ -56,8 +59,36 @@ export default function PupilsTable() {
                     </select>
                 </label>
             )}
+            <button type="button" className="table-toggle" onClick={() => setWideTable(w => !w)}>
+                {wideTable ? 'טבלה מצומצמת' : 'טבלה מורחבת'}
+            </button>
         </div>
-        <div className="table-wrap">
+        <div className={`table-wrap compact-wrap${wideTable ? ' hidden' : ''}`}>
+        <table>
+            <thead>
+                <tr>
+                    <th>שם</th>
+                    <th>כיתה</th>
+                    <th>פרטים</th>
+                </tr>
+            </thead>
+            <tbody>
+                {visiblePupils.map(pupil => (
+                    <tr key={pupil.id}>
+                        <td>{pupil.name}</td>
+                        <td>{classLabel(pupil.className)}</td>
+                        <td className="actions">
+                            <button onClick={() => setSelectedPupil(pupil)}>פרטים</button>
+                        </td>
+                    </tr>
+                ))}
+                {visiblePupils.length === 0 && (
+                    <tr><td colSpan={3} className="empty">אין תלמידים להצגה</td></tr>
+                )}
+            </tbody>
+        </table>
+        </div>
+        <div className={`table-wrap full-wrap${wideTable ? ' wide' : ''}`}>
         <table>
             <thead>
                 <tr>
@@ -95,6 +126,27 @@ export default function PupilsTable() {
             </tbody>
         </table>
         </div>
+        {selectedPupil && (
+        <div className="modal-overlay" onClick={() => setSelectedPupil(null)}>
+            <div className="pupil-card" onClick={e => e.stopPropagation()}>
+                <h2>{selectedPupil.name}</h2>
+                <dl>
+                    <div><dt>כיתה</dt><dd>{classLabel(selectedPupil.className)}</dd></div>
+                    <div><dt>שילוב/סל אישי</dt><dd>{selectedPupil.Integration}</dd></div>
+                    <div><dt>יש איבחון? איזה?</dt><dd>{selectedPupil.Diagnosis}</dd></div>
+                    <div><dt>תמיכה לימודית</dt><dd>{selectedPupil.Educationalresponse}</dd></div>
+                    <div><dt>תמיכה ריגשית</dt><dd>{selectedPupil.Emotionalresponse}</dd></div>
+                    <div><dt>מענים נוספים</dt><dd>{selectedPupil.Otherresponse}</dd></div>
+                    <div><dt>הערות</dt><dd>{selectedPupil.Notes}</dd></div>
+                </dl>
+                <div className="pupil-card-actions">
+                    <button onClick={() => navigate(`/pupilForm/${selectedPupil.id}`)}>עריכה</button>
+                    <button className="danger" onClick={() => handleDelete(selectedPupil)}>מחיקה</button>
+                    <button onClick={() => setSelectedPupil(null)}>סגירה</button>
+                </div>
+            </div>
+        </div>
+        )}
         </>
     )
 }
