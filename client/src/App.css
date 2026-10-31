@@ -60,8 +60,8 @@ body::before {
 /* במובייל - מונע מילדים רחבים (טבלאות) להרחיב את העמוד */
 @media (max-width: 700px) {
   .page, body, main { 
-    padding-left: 10px !important;
-    padding-right: 10px !important;
+    padding-left: 5px !important;
+    padding-right: 5px !important;
     box-sizing: border-box;
     width: 100% !important;
   }
