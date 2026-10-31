@@ -28,13 +28,27 @@ app.use('/api', async (_req, res, next) => {
         next()
     } catch (error) {
         console.error('Failed to initialize database', error)
-        res.status(500).json({ error: 'שגיאה באתחול מסד הנתונים' })
+        // details נוסף זמנית לצורך דיבוג ב-Vercel - אפשר להסיר אחרי שהבעיה תתברר
+        res.status(500).json({ error: 'שגיאה באתחול מסד הנתונים', details: String(error) })
     }
 })
 
 app.use('/api/teachers', teacherRoutes)
 app.use('/api/pupils', pupilRoutes)
 app.use('/api/auth', authRoutes)
+
+// מתעלם משגיאות "כבר קיים" - קורה כשכמה serverless functions מאתחלות את מסד הנתונים במקביל ב-Vercel
+async function allowExists(query: PromiseLike<unknown>) {
+    try {
+        await query
+    } catch (error) {
+        // 42P07 = טבלה/view כבר קיים, 42710 = constraint כבר קיים, 42701 = עמודה כבר קיימת
+        const code = (error as { code?: string })?.code
+        if (!['42P07', '42710', '42701'].includes(code ?? '') && !String(error).includes('already exists')) {
+            throw error
+        }
+    }
+}
 
 async function initDb() {
     await sql`
@@ -53,6 +67,8 @@ async function initDb() {
             grade INTEGER NOT NULL
         )
     `
+    // בטבלה קיימת שלא נוצרה ע"י initDb העמודה עלולה להיות חסרה
+    await sql`ALTER TABLE teachers ADD COLUMN IF NOT EXISTS grade INTEGER`
     await sql`ALTER TABLE teachers ADD COLUMN IF NOT EXISTS user_id INTEGER UNIQUE REFERENCES users(user_id) ON DELETE SET NULL`
     await sql`
         CREATE TABLE IF NOT EXISTS password_reset_tokens (
@@ -87,7 +103,7 @@ async function initDb() {
     // בעלי תפקידים (מנהלת/יועצת/רכז) אינם משויכים לכיתה - בדיוק אחד מ-grade/position
     await sql`ALTER TABLE teachers ALTER COLUMN grade DROP NOT NULL`
     await sql`ALTER TABLE teachers ADD COLUMN IF NOT EXISTS position TEXT`
-    await sql`
+    await allowExists(sql`
         DO $$
         BEGIN
             IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'teachers_grade_or_position_check') THEN
@@ -95,7 +111,9 @@ async function initDb() {
                     CHECK ((grade IS NOT NULL) <> (position IS NOT NULL));
             END IF;
         END $$
-    `
+    `)
+    // בטבלה קיימת שלא נוצרה ע"י initDb העמודה עלולה להיות חסרה
+    await sql`ALTER TABLE pupils ADD COLUMN IF NOT EXISTS startyeargrade1 INTEGER`
     // class_suffix: המספר (1/2/3) נשמר קבוע; האות נגזרת משנת ההתחלה ב-view. במקדמות נשמר השם המלא.
     await sql`ALTER TABLE pupils ADD COLUMN IF NOT EXISTS class_suffix TEXT`
     await sql`ALTER TABLE pupils ADD COLUMN IF NOT EXISTS Integration TEXT`
@@ -110,11 +128,11 @@ async function initDb() {
             WHERE class_suffix IS NULL
         `
         await sql`DROP VIEW IF EXISTS pupils_view`
-        await sql`ALTER TABLE pupils DROP COLUMN class_name`
+        await sql`ALTER TABLE pupils DROP COLUMN IF EXISTS class_name`
     }
     // DROP לפני יצירה מחדש כי CREATE OR REPLACE לא יכול לשנות עמודות ב-view קיים
     await sql`DROP VIEW IF EXISTS pupils_view`
-    await sql`
+    await allowExists(sql`
         CREATE VIEW pupils_view AS
         SELECT p.*,
             CASE WHEN p.class_suffix ~ '^[0-9]+$'
@@ -125,7 +143,7 @@ async function initDb() {
         CROSS JOIN LATERAL (
             SELECT CASE WHEN EXTRACT(MONTH FROM now()) >= 9 THEN EXTRACT(YEAR FROM now())::int ELSE EXTRACT(YEAR FROM now())::int - 1 END AS year
         ) s
-    `
+    `)
 }
 
 export default app
