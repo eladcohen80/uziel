@@ -13,3 +13,9 @@ export function isPromotingClass(className: string) {
 export function classLabel(className: string) {
   return /^[א-ו]\d$/.test(className) ? `כיתה ${className}` : className
 }
+
+// סדר מיון הכיתות: א1, א2, ב1... ו2, מקדמת צעירה, מקדמת בוגרת. כיתה לא מוכרת נשלחת לסוף
+export function classSortIndex(className: string) {
+  const index = CLASSES.indexOf(className)
+  return index === -1 ? CLASSES.length : index
+}

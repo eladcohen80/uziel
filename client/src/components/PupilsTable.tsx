@@ -2,8 +2,21 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Pupil } from '../types/Pupil'
 import { deletePupil, getPupils } from '../services/pupilService'
-import { CLASSES, classLabel } from '../utils/grades'
+import { CLASSES, classLabel, classSortIndex } from '../utils/grades'
 import { getStoredUser } from '../services/authService'
+import { useTableSort } from '../hooks/useTableSort'
+import SortableTh from './SortableTh'
+
+type PupilSortKey = 'name' | 'className' | 'Integration' | 'Diagnosis' | 'Educationalresponse' | 'Emotionalresponse' | 'Otherresponse' | 'Notes'
+
+function comparePupils(a: Pupil, b: Pupil, key: PupilSortKey): number {
+    if (key === 'className') {
+        return classSortIndex(a.className) - classSortIndex(b.className)
+            || a.className.localeCompare(b.className, 'he')
+            || a.name.localeCompare(b.name, 'he')
+    }
+    return a[key].localeCompare(b[key], 'he') || a.name.localeCompare(b.name, 'he')
+}
 
 export default function PupilsTable() {
     const navigate = useNavigate()
@@ -14,12 +27,17 @@ export default function PupilsTable() {
     const [search, setSearch] = useState('')
     const [wideTable, setWideTable] = useState(false)
     const [selectedPupil, setSelectedPupil] = useState<Pupil | null>(null)
+    const { sortColumn, sortDir, toggleSort } = useTableSort<PupilSortKey>('className')
     const query = search.trim().toLowerCase()
     const visiblePupils = pupils.filter(p =>
         (!selectedClass || p.className === selectedClass) &&
         (!query || [p.name, p.className, p.Integration, p.Diagnosis, p.Educationalresponse, p.Emotionalresponse, p.Otherresponse, p.Notes]
             .some(field => field?.toLowerCase().includes(query)))
     )
+    const sortedPupils = [...visiblePupils].sort((a, b) => {
+        const cmp = comparePupils(a, b, sortColumn)
+        return sortDir === 'asc' ? cmp : -cmp
+    })
 
     useEffect(() => {
         getPupils()
@@ -67,13 +85,13 @@ export default function PupilsTable() {
         <table>
             <thead>
                 <tr>
-                    <th>שם</th>
-                    <th>כיתה</th>
+                    <SortableTh label="שם" column="name" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
+                    <SortableTh label="כיתה" column="className" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <th>פרטים</th>
                 </tr>
             </thead>
             <tbody>
-                {visiblePupils.map(pupil => (
+                {sortedPupils.map(pupil => (
                     <tr key={pupil.id}>
                         <td>{pupil.name}</td>
                         <td>{classLabel(pupil.className)}</td>
@@ -82,7 +100,7 @@ export default function PupilsTable() {
                         </td>
                     </tr>
                 ))}
-                {visiblePupils.length === 0 && (
+                {sortedPupils.length === 0 && (
                     <tr><td colSpan={3} className="empty">אין תלמידים להצגה</td></tr>
                 )}
             </tbody>
@@ -92,19 +110,19 @@ export default function PupilsTable() {
         <table>
             <thead>
                 <tr>
-                    <th>שם</th>
-                    <th>כיתה</th>
-                    <th>שילוב/סל אישי</th>
-                    <th>יש איבחון? איזה?</th>
-                    <th>תמיכה לימודית</th>
-                    <th>תמיכה ריגשית</th>
-                    <th>מענים נוספים</th>
-                    <th>הערות</th>
+                    <SortableTh label="שם" column="name" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
+                    <SortableTh label="כיתה" column="className" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
+                    <SortableTh label="שילוב/סל אישי" column="Integration" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
+                    <SortableTh label="יש איבחון? איזה?" column="Diagnosis" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
+                    <SortableTh label="תמיכה לימודית" column="Educationalresponse" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
+                    <SortableTh label="תמיכה ריגשית" column="Emotionalresponse" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
+                    <SortableTh label="מענים נוספים" column="Otherresponse" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
+                    <SortableTh label="הערות" column="Notes" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <th>פעולות</th>
                 </tr>
             </thead>
             <tbody>
-                {visiblePupils.map(pupil => (
+                {sortedPupils.map(pupil => (
                     <tr key={pupil.id}>
                         <td>{pupil.name}</td>
                         <td>{classLabel(pupil.className)}</td>
@@ -120,7 +138,7 @@ export default function PupilsTable() {
                         </td>
                     </tr>
                 ))}
-                {visiblePupils.length === 0 && (
+                {sortedPupils.length === 0 && (
                     <tr><td colSpan={9} className="empty">אין תלמידים להצגה</td></tr>
                 )}
             </tbody>

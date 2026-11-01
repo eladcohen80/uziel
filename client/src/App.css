@@ -464,6 +464,41 @@ th {
   white-space: nowrap;
 }
 
+/* כותרת ממוינת - הכפתור ממלא את כל התא כדי שכל הכותרת תהיה לחיצה */
+th.sortable {
+  padding: 0;
+}
+
+.th-sort {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px 20px;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  text-align: start;
+}
+
+.th-sort:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.sort-arrow {
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .th-sort {
+    padding: 12px 10px;
+  }
+}
+
 tbody tr:nth-child(even) {
   background: var(--row-alt);
 }
