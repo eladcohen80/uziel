@@ -15,7 +15,16 @@ function comparePupils(a: Pupil, b: Pupil, key: PupilSortKey): number {
             || a.className.localeCompare(b.className, 'he')
             || a.name.localeCompare(b.name, 'he')
     }
-    return a[key].localeCompare(b[key], 'he') || a.name.localeCompare(b.name, 'he')
+    if (key === 'name') {
+        return a.name.localeCompare(b.name, 'he')
+    }
+    // עמודות תוכן: תאים מלאים למעלה (ממוינים ביניהם), ריקים למטה; מיון שניוני לפי סדר הכיתות
+    const aValue = a[key] ?? ''
+    const bValue = b[key] ?? ''
+    if (!aValue && !bValue) return comparePupils(a, b, 'className')
+    if (!aValue) return 1
+    if (!bValue) return -1
+    return aValue.localeCompare(bValue, 'he') || comparePupils(a, b, 'className')
 }
 
 export default function PupilsTable() {
