@@ -103,26 +103,28 @@ export default function PupilsTable() {
                 onChange={e => setSearch(e.target.value)}
                 placeholder="חיפוש..."
             />
-            {isAdmin && (
-                <label>
-                    כיתה:{' '}
-                    <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>
-                        <option value="">כל הכיתות</option>
-                        {CLASSES.map(className => (
-                            <option key={className} value={className}>{classLabel(className)}</option>
-                        ))}
-                    </select>
-                </label>
-            )}
-            <span className="export-excel">
-                <span>יצא לאקסל:</span>
-                <button type="button" className="export-excel-btn" onClick={exportToExcel} title="יצא לאקסל" aria-label="יצא לאקסל">
-                    <ExcelIcon />
+            <div className="filter-row2">
+                {isAdmin && (
+                    <label>
+                        כיתה:{' '}
+                        <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>
+                            <option value="">כל הכיתות</option>
+                            {CLASSES.map(className => (
+                                <option key={className} value={className}>{classLabel(className)}</option>
+                            ))}
+                        </select>
+                    </label>
+                )}
+                <span className="export-excel">
+                    <span>יצא לאקסל:</span>
+                    <button type="button" className="export-excel-btn" onClick={exportToExcel} title="יצא לאקסל" aria-label="יצא לאקסל">
+                        <ExcelIcon />
+                    </button>
+                </span>
+                <button type="button" className="table-toggle" onClick={() => setWideTable(w => !w)}>
+                    {wideTable ? 'טבלה מצומצמת' : 'טבלה מורחבת'}
                 </button>
-            </span>
-            <button type="button" className="table-toggle" onClick={() => setWideTable(w => !w)}>
-                {wideTable ? 'טבלה מצומצמת' : 'טבלה מורחבת'}
-            </button>
+            </div>
         </div>
         <div className={`table-wrap compact-wrap${wideTable ? ' hidden' : ''}`}>
         <table>

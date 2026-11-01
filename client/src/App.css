@@ -357,6 +357,11 @@ button.danger:hover {
   flex-basis: 100%;
 }
 
+/* בדסקטופ המעטפת שקופה - כל הפקדים ממשיכים באותה שורה */
+.filter-row2 {
+  display: contents;
+}
+
 /* תיבות הסינון נראות כמו שאר התיבות באפליקציה, ללא השפעה ממצב כהה בטלפון */
 .filter input,
 .filter select {
@@ -369,7 +374,7 @@ button.danger:hover {
   font-size: 16px;
 }
 
-/* במובייל: הכותרת ותיבת החיפוש באותה שורה, ובחירת הכיתה והיצוא לאקסל בשורה מתחת */
+/* במובייל: שורה ראשונה - הכותרת ותיבת החיפוש; שורה שנייה - כיתה, יצוא לאקסל ושינוי הצגת הטבלה */
 @media (max-width: 700px) {
   .filter h1 {
     flex-basis: auto;
@@ -377,10 +382,18 @@ button.danger:hover {
     font-size: 28px;
   }
 
-  /* תיבת החיפוש ממלאת את שארית השורה של הכותרת - שאר הפקדים יורדים לשורה הבאה */
+  /* תיבת החיפוש ממלאת את שארית השורה של הכותרת */
   .filter input[type="search"] {
     flex: 1;
     min-width: 0;
+  }
+
+  .filter-row2 {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    flex-basis: 100%;
   }
 }
 
