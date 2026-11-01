@@ -4,27 +4,27 @@ import type { Pupil } from '../types/Pupil'
 import { deletePupil, getPupils } from '../services/pupilService'
 import { CLASSES, classLabel, classSortIndex } from '../utils/grades'
 import { getStoredUser } from '../services/authService'
-import { useTableSort } from '../hooks/useTableSort'
+import { useTableSort, type SortDir } from '../hooks/useTableSort'
 import SortableTh from './SortableTh'
 
 type PupilSortKey = 'name' | 'className' | 'Integration' | 'Diagnosis' | 'Educationalresponse' | 'Emotionalresponse' | 'Otherresponse' | 'Notes'
 
-function comparePupils(a: Pupil, b: Pupil, key: PupilSortKey): number {
+function comparePupils(a: Pupil, b: Pupil, key: PupilSortKey, dir: SortDir): number {
     if (key === 'className') {
-        return classSortIndex(a.className) - classSortIndex(b.className)
+        const cmp = classSortIndex(a.className) - classSortIndex(b.className)
             || a.className.localeCompare(b.className, 'he')
             || a.name.localeCompare(b.name, 'he')
+        return dir === 'asc' ? cmp : -cmp
     }
     if (key === 'name') {
-        return a.name.localeCompare(b.name, 'he')
+        const cmp = a.name.localeCompare(b.name, 'he')
+        return dir === 'asc' ? cmp : -cmp
     }
-    // עמודות תוכן: תאים מלאים למעלה (ממוינים ביניהם), ריקים למטה; מיון שניוני לפי סדר הכיתות
-    const aValue = a[key] ?? ''
-    const bValue = b[key] ?? ''
-    if (!aValue && !bValue) return comparePupils(a, b, 'className')
-    if (!aValue) return 1
-    if (!bValue) return -1
-    return aValue.localeCompare(bValue, 'he') || comparePupils(a, b, 'className')
+    // עמודות תוכן: מיון ראשוני - תאים מלאים תמיד למעלה; מיון שניוני - סדר הכיתות (החץ קובע את כיוון סדר הכיתות)
+    const aValue = (a[key] ?? '').trim()
+    const bValue = (b[key] ?? '').trim()
+    if (!aValue !== !bValue) return aValue ? -1 : 1
+    return comparePupils(a, b, 'className', dir)
 }
 
 export default function PupilsTable() {
@@ -43,10 +43,7 @@ export default function PupilsTable() {
         (!query || [p.name, p.className, p.Integration, p.Diagnosis, p.Educationalresponse, p.Emotionalresponse, p.Otherresponse, p.Notes]
             .some(field => field?.toLowerCase().includes(query)))
     )
-    const sortedPupils = [...visiblePupils].sort((a, b) => {
-        const cmp = comparePupils(a, b, sortColumn)
-        return sortDir === 'asc' ? cmp : -cmp
-    })
+    const sortedPupils = [...visiblePupils].sort((a, b) => comparePupils(a, b, sortColumn, sortDir))
 
     useEffect(() => {
         getPupils()
