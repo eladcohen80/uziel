@@ -352,9 +352,36 @@ button.danger:hover {
   margin-bottom: 12px;
 }
 
+/* בדסקטופ הכותרת תופסת שורה משלה מעל פקדי הסינון */
+.filter h1 {
+  flex-basis: 100%;
+}
+
+/* תיבות הסינון נראות כמו שאר התיבות באפליקציה, ללא השפעה ממצב כהה בטלפון */
 .filter input,
 .filter select {
   padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 16px;
+}
+
+/* במובייל: הכותרת ותיבת החיפוש באותה שורה, ובחירת הכיתה והיצוא לאקסל בשורה מתחת */
+@media (max-width: 700px) {
+  .filter h1 {
+    flex-basis: auto;
+    margin: 0;
+    font-size: 28px;
+  }
+
+  /* תיבת החיפוש ממלאת את שארית השורה של הכותרת - שאר הפקדים יורדים לשורה הבאה */
+  .filter input[type="search"] {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .export-excel {

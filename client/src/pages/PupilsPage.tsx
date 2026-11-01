@@ -5,7 +5,6 @@ export default function PupilsPage() {
   return (
     <div className="page pupils-page">
       <Navbar />
-      <h1>תלמידים</h1>
       <PupilsTable />
     </div>
   )
