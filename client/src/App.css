@@ -425,7 +425,7 @@ button.danger:hover {
   align-items: center;
   justify-content: center;
   padding: 0px;
-  /* background: var(--surface); */
+  background: var(--surface);
   /* border: 1px solid var(--border); */
   /* border-radius: 8px; */
 }
