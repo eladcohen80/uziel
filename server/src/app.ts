@@ -20,11 +20,18 @@ app.use((req, res, next) => {
 })
 
 // מחכים לאתחול מסד הנתונים לפני טיפול בבקשות (חשוב ב-serverless)
-const dbReady = initDb()
-dbReady.catch(() => {}) // השגיאה עצמה מוחזרת לבקשות דרך ה-middleware למטה
+// אחרי כשל ה-promise מתאפס כדי שהבקשה הבאה תנסה שוב (אחרת ה-instance נשאר תקוע על הכשל הראשון)
+let dbReady: Promise<void> | null = null
+function ensureDbReady() {
+    if (!dbReady) {
+        dbReady = initDbWithRetry()
+        dbReady.catch(() => { dbReady = null })
+    }
+    return dbReady
+}
 app.use('/api', async (_req, res, next) => {
     try {
-        await dbReady
+        await ensureDbReady()
         next()
     } catch (error) {
         console.error('Failed to initialize database', error)
@@ -43,14 +50,40 @@ async function allowExists(query: PromiseLike<unknown>) {
         await query
     } catch (error) {
         // 42P07 = טבלה/view כבר קיים, 42710 = constraint כבר קיים, 42701 = עמודה כבר קיימת
+        // 23505 = מפתח כפול בקטלוג (pg_type_typname_nsp_index) - שני אתחולים מקבילים יצרו את אותו האובייקט
         const code = (error as { code?: string })?.code
-        if (!['42P07', '42710', '42701'].includes(code ?? '') && !String(error).includes('already exists')) {
+        if (!['42P07', '42710', '42701', '23505'].includes(code ?? '') && !String(error).includes('already exists')) {
             throw error
         }
     }
 }
 
+// אתחול מקביל של כמה serverless functions עלול להתנגש בקטלוג של Neon - מנסים שוב עם השהיה
+async function initDbWithRetry(attempts = 3) {
+    for (let attempt = 1; ; attempt++) {
+        try {
+            await initDb()
+            return
+        } catch (error) {
+            if (attempt >= attempts) throw error
+            await new Promise(resolve => setTimeout(resolve, 500 * attempt))
+        }
+    }
+}
+
+// גרסת הסכמה - לעלות בכל שינוי ב-initDb. האתחול רץ פעם אחת בלבד ולא בכל cold start,
+// כדי למנוע התנגשויות קטלוג כשכמה serverless functions עולים במקביל ב-Vercel
+const SCHEMA_VERSION = 1
+
 async function initDb() {
+    await sql`
+        CREATE TABLE IF NOT EXISTS app_meta (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        )
+    `
+    const versionRow = await sql`SELECT value FROM app_meta WHERE key = 'schema_version'`
+    if (Number(versionRow[0]?.value) >= SCHEMA_VERSION) return
     await sql`
         CREATE TABLE IF NOT EXISTS users (
             user_id SERIAL PRIMARY KEY,
@@ -101,7 +134,15 @@ async function initDb() {
         END $$
     `
     // בעלי תפקידים (מנהלת/סגן מנהל/יועצת/רכז) אינם משויכים לכיתה - בדיוק אחד מ-grade/position
-    await sql`ALTER TABLE teachers ALTER COLUMN grade DROP NOT NULL`
+    // DROP NOT NULL מותנה כדי לא לכתוב לקטלוג בכל אתחול (כתיבות מקבילות לקטלוג מתנגשות ב-Neon)
+    await sql`
+        DO $$
+        BEGIN
+            IF (SELECT is_nullable FROM information_schema.columns WHERE table_name = 'teachers' AND column_name = 'grade') = 'NO' THEN
+                ALTER TABLE teachers ALTER COLUMN grade DROP NOT NULL;
+            END IF;
+        END $$
+    `
     await sql`ALTER TABLE teachers ADD COLUMN IF NOT EXISTS position TEXT`
     await allowExists(sql`
         DO $$
@@ -119,7 +160,14 @@ async function initDb() {
     await sql`ALTER TABLE pupils ADD COLUMN IF NOT EXISTS Integration TEXT`
     await sql`ALTER TABLE pupils ADD COLUMN IF NOT EXISTS Diagnosis TEXT`
     // במקדמות אין שנת התחלה חובה
-    await sql`ALTER TABLE pupils ALTER COLUMN startyeargrade1 DROP NOT NULL`
+    await sql`
+        DO $$
+        BEGIN
+            IF (SELECT is_nullable FROM information_schema.columns WHERE table_name = 'pupils' AND column_name = 'startyeargrade1') = 'NO' THEN
+                ALTER TABLE pupils ALTER COLUMN startyeargrade1 DROP NOT NULL;
+            END IF;
+        END $$
+    `
     const oldColumn = await sql`SELECT 1 FROM information_schema.columns WHERE table_name = 'pupils' AND column_name = 'class_name'`
     if (oldColumn.length > 0) {
         await sql`
@@ -136,20 +184,39 @@ async function initDb() {
         SELECT 'הרב יהונתן בונה', NULL, 'סגן מנהל'
         WHERE NOT EXISTS (SELECT 1 FROM teachers WHERE name = 'הרב יהונתן בונה')
     `
-    // DROP לפני יצירה מחדש כי CREATE OR REPLACE לא יכול לשנות עמודות ב-view קיים
-    await sql`DROP VIEW IF EXISTS pupils_view`
-    await allowExists(sql`
-        CREATE VIEW pupils_view AS
-        SELECT p.*,
-            CASE WHEN p.class_suffix ~ '^[0-9]+$'
-                THEN COALESCE((ARRAY['א','ב','ג','ד','ה','ו'])[s.year - p.startyeargrade1 + 1] || p.class_suffix, 'סיים')
-                ELSE p.class_suffix
-            END AS class_name
-        FROM pupils p
-        CROSS JOIN LATERAL (
-            SELECT CASE WHEN EXTRACT(MONTH FROM now()) >= 9 THEN EXTRACT(YEAR FROM now())::int ELSE EXTRACT(YEAR FROM now())::int - 1 END AS year
-        ) s
-    `)
+    // יוצרים מחדש את ה-view רק אם הוא חסר או חסרות בו עמודות - drop/create בכל אתחול מתנגש באתחול מקביל של serverless functions
+    const viewStatus = await sql`
+        SELECT to_regclass('pupils_view') IS NOT NULL AS view_exists,
+            NOT EXISTS (
+                SELECT 1 FROM information_schema.columns p
+                WHERE p.table_name = 'pupils'
+                AND NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns v
+                    WHERE v.table_name = 'pupils_view' AND v.column_name = p.column_name
+                )
+            ) AS up_to_date
+    `
+    if (!viewStatus[0].view_exists || !viewStatus[0].up_to_date) {
+        // DROP לפני יצירה מחדש כי CREATE OR REPLACE לא יכול לשנות עמודות ב-view קיים
+        await sql`DROP VIEW IF EXISTS pupils_view`
+        await allowExists(sql`
+            CREATE VIEW pupils_view AS
+            SELECT p.*,
+                CASE WHEN p.class_suffix ~ '^[0-9]+$'
+                    THEN COALESCE((ARRAY['א','ב','ג','ד','ה','ו'])[s.year - p.startyeargrade1 + 1] || p.class_suffix, 'סיים')
+                    ELSE p.class_suffix
+                END AS class_name
+            FROM pupils p
+            CROSS JOIN LATERAL (
+                SELECT CASE WHEN EXTRACT(MONTH FROM now()) >= 9 THEN EXTRACT(YEAR FROM now())::int ELSE EXTRACT(YEAR FROM now())::int - 1 END AS year
+            ) s
+        `)
+    }
+    // מסמן שהאתחול הושלם - cold starts הבאים ידלגו על כל ה-DDL
+    await sql`
+        INSERT INTO app_meta (key, value) VALUES ('schema_version', ${String(SCHEMA_VERSION)})
+        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+    `
 }
 
 export default app
@@ -157,7 +224,7 @@ export default app
 // האזנה לפורט מקומית בלבד; ב-Vercel האפליקציה רצה כ-serverless function
 if (!process.env.VERCEL) {
     const port = Number(process.env.PORT) || 3000
-    dbReady
+    ensureDbReady()
         .then(() => {
             app.listen(port, () => console.log(`Server listening on port ${port}`))
         })

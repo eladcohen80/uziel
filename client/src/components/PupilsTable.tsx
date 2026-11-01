@@ -7,16 +7,12 @@ import { CLASSES, classLabel, classSortIndex } from '../utils/grades'
 import { getStoredUser } from '../services/authService'
 import { useTableSort, type SortDir } from '../hooks/useTableSort'
 import SortableTh from './SortableTh'
+import excelIcon from '../assets/excel-icon.png'
 
 type PupilSortKey = 'name' | 'className' | 'Integration' | 'Diagnosis' | 'Educationalresponse' | 'Emotionalresponse' | 'Otherresponse' | 'Notes'
 
 function ExcelIcon() {
-    return (
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-            <rect x="1" y="1" width="22" height="22" rx="8" fill="#107c41" />
-            <text x="12" y="16.5" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#fff" fontFamily="Arial, sans-serif">X</text>
-        </svg>
-    )
+    return <img src={excelIcon} width="22" height="22" aria-hidden="true" alt="" />
 }
 
 function comparePupils(a: Pupil, b: Pupil, key: PupilSortKey, dir: SortDir): number {
