@@ -161,8 +161,24 @@ body::before {
 }
 
 @media (max-width: 700px) {
+  /* נאבאר צר - בגובה של שורת החיפוש, עם מרווח קטן מעל שורת הסינון */
+  .navbar {
+    margin: 8px 0 5px;
+    padding: 2px 8px;
+  }
+
   .hamburger {
     display: flex;
+    padding: 4px;
+  }
+
+  .hamburger svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .navbar-home {
+    padding: 4px 10px;
   }
 
   .navbar-home {
