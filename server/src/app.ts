@@ -100,7 +100,7 @@ async function initDb() {
             END IF;
         END $$
     `
-    // בעלי תפקידים (מנהלת/יועצת/רכז) אינם משויכים לכיתה - בדיוק אחד מ-grade/position
+    // בעלי תפקידים (מנהלת/סגן מנהל/יועצת/רכז) אינם משויכים לכיתה - בדיוק אחד מ-grade/position
     await sql`ALTER TABLE teachers ALTER COLUMN grade DROP NOT NULL`
     await sql`ALTER TABLE teachers ADD COLUMN IF NOT EXISTS position TEXT`
     await allowExists(sql`
@@ -130,6 +130,12 @@ async function initDb() {
         await sql`DROP VIEW IF EXISTS pupils_view`
         await sql`ALTER TABLE pupils DROP COLUMN IF EXISTS class_name`
     }
+    // הרב יהונתן בונה - סגן מנהל; בעל תפקיד ללא כיתה, יקבל role=admin בהרשמה
+    await sql`
+        INSERT INTO teachers (name, grade, position)
+        SELECT 'הרב יהונתן בונה', NULL, 'סגן מנהל'
+        WHERE NOT EXISTS (SELECT 1 FROM teachers WHERE name = 'הרב יהונתן בונה')
+    `
     // DROP לפני יצירה מחדש כי CREATE OR REPLACE לא יכול לשנות עמודות ב-view קיים
     await sql`DROP VIEW IF EXISTS pupils_view`
     await allowExists(sql`

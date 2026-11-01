@@ -4,7 +4,7 @@ export const CLASSES = [
 ]
 
 // בעלי תפקידים שאינם משויכים לכיתה
-export const POSITIONS = ['מנהלת', 'יועצת', 'רכז המרחב השלם']
+export const POSITIONS = ['מנהלת', 'סגן מנהל', 'יועצת', 'רכז המרחב השלם']
 
 export function isPromotingClass(className: string) {
   return !/^[א-ו]/.test(className)
