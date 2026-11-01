@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import * as XLSX from 'xlsx'
 import type { Pupil } from '../types/Pupil'
 import { deletePupil, getPupils } from '../services/pupilService'
 import { CLASSES, classLabel, classSortIndex } from '../utils/grades'
@@ -8,6 +9,15 @@ import { useTableSort, type SortDir } from '../hooks/useTableSort'
 import SortableTh from './SortableTh'
 
 type PupilSortKey = 'name' | 'className' | 'Integration' | 'Diagnosis' | 'Educationalresponse' | 'Emotionalresponse' | 'Otherresponse' | 'Notes'
+
+function ExcelIcon() {
+    return (
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <rect x="1" y="1" width="22" height="22" rx="8" fill="#107c41" />
+            <text x="12" y="16.5" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#fff" fontFamily="Arial, sans-serif">X</text>
+        </svg>
+    )
+}
 
 function comparePupils(a: Pupil, b: Pupil, key: PupilSortKey, dir: SortDir): number {
     if (key === 'className') {
@@ -51,6 +61,26 @@ export default function PupilsTable() {
             .catch(() => setError('שגיאה בטעינת התלמידים'))
     }, [])
 
+    function exportToExcel() {
+        // מיוצא מה שמוצג כרגע: אותן שורות (סינון/חיפוש/מיון) ואותן עמודות של הטבלה הנראית
+        const compact = window.matchMedia('(max-width: 700px)').matches && !wideTable
+        const headers = compact
+            ? ['שם', 'כיתה']
+            : ['שם', 'כיתה', 'שילוב/סל אישי', 'יש איבחון? איזה?', 'תמיכה לימודית', 'תמיכה ריגשית', 'מענים נוספים', 'הערות']
+        const rows = sortedPupils.map(pupil => compact
+            ? [pupil.name, classLabel(pupil.className)]
+            : [pupil.name, classLabel(pupil.className), pupil.Integration, pupil.Diagnosis, pupil.Educationalresponse, pupil.Emotionalresponse, pupil.Otherresponse, pupil.Notes]
+        )
+        const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows])
+        worksheet['!cols'] = headers.map((header, col) => ({
+            wch: Math.max(header.length, ...rows.map(row => row[col]?.length ?? 0)) + 2
+        }))
+        const workbook = XLSX.utils.book_new()
+        workbook.Workbook = { Views: [{ RTL: true }] }
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'תלמידים')
+        XLSX.writeFile(workbook, 'תלמידים.xlsx')
+    }
+
     async function handleDelete(pupil: Pupil) {
         if (!window.confirm(`למחוק את ${pupil.name}?`)) return
         try {
@@ -83,6 +113,12 @@ export default function PupilsTable() {
                     </select>
                 </label>
             )}
+            <span className="export-excel">
+                <span>יצא לאקסל:</span>
+                <button type="button" className="export-excel-btn" onClick={exportToExcel} title="יצא לאקסל" aria-label="יצא לאקסל">
+                    <ExcelIcon />
+                </button>
+            </span>
             <button type="button" className="table-toggle" onClick={() => setWideTable(w => !w)}>
                 {wideTable ? 'טבלה מצומצמת' : 'טבלה מורחבת'}
             </button>

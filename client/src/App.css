@@ -357,6 +357,27 @@ button.danger:hover {
   padding: 6px 10px;
 }
 
+.export-excel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.export-excel-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0px;
+  /* background: var(--surface); */
+  /* border: 1px solid var(--border); */
+  /* border-radius: 8px; */
+}
+
+.export-excel-btn:hover {
+  background: var(--accent-bg);
+}
+
 .table-wrap {
   background: var(--surface);
   border: 1px solid var(--border);
