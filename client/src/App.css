@@ -123,6 +123,13 @@ body::before {
   color: var(--primary);
 }
 
+/* הדף הנוכחי מודגש בנאבאר (NavLink מוסיף class=active אוטומטית) */
+.navbar a.active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+}
+
 .navbar-links {
   display: flex;
   flex-wrap: wrap;
@@ -396,12 +403,8 @@ button.danger:hover {
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
+  margin-top: 12px;
   margin-bottom: 12px;
-}
-
-/* בדסקטופ הכותרת תופסת שורה משלה מעל פקדי הסינון */
-.filter h1 {
-  flex-basis: 100%;
 }
 
 /* בדסקטופ המעטפת שקופה - כל הפקדים ממשיכים באותה שורה */
@@ -421,15 +424,9 @@ button.danger:hover {
   font-size: 16px;
 }
 
-/* במובייל: שורה ראשונה - הכותרת ותיבת החיפוש; שורה שנייה - כיתה, יצוא לאקסל ושינוי הצגת הטבלה */
+/* במובייל: שורה ראשונה - תיבת החיפוש; שורה שנייה - כיתה, יצוא לאקסל ושינוי הצגת הטבלה */
 @media (max-width: 700px) {
-  .filter h1 {
-    flex-basis: auto;
-    margin: 0;
-    font-size: 28px;
-  }
-
-  /* תיבת החיפוש ממלאת את שארית השורה של הכותרת */
+  /* תיבת החיפוש ממלאת את כל השורה */
   .filter input[type="search"] {
     flex: 1;
     min-width: 0;
@@ -474,6 +471,8 @@ button.danger:hover {
   overflow-x: auto;
   /* הריבוע לא גדל מעבר לרוחב העמוד - הטבלה גוללת בתוכו */
   max-width: 100%;
+  /* מרווח מהנאבאר אחרי שהכותרות הוסרו מהדפים */
+  margin-top: 12px;
 }
 
 /* בדסקטופ עמודים עם טבלה מנצלים רוחב גדול יותר */

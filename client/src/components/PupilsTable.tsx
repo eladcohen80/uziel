@@ -93,7 +93,6 @@ export default function PupilsTable() {
         <>
         {error && <p className="form-error">{error}</p>}
         <div className="filter">
-            <h1>תלמידים</h1>
             <input
                 type="search"
                 value={search}

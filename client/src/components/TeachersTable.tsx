@@ -58,7 +58,7 @@ export default function TeachersTable() {
     return (
         <>
         {error && <p className="form-error">{error}</p>}
-        <div className="table-wrap teachers-table-wrap">
+        <div  className="table-wrap teachers-table-wrap">
         <table>
             <thead>
                 <tr>

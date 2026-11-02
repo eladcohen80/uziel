@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { getStoredUser, logout } from '../services/authService'
 
 export default function Navbar() {
@@ -30,15 +30,15 @@ export default function Navbar() {
         </svg>
       </button>
       {/* במובייל דף הבית מוצג לצד ההמבורגר ולא בתוך התפריט */}
-      {token && <Link to="/" className="navbar-home" onClick={close}>דף הבית</Link>}
+      {token && <NavLink to="/" className="navbar-home" onClick={close}>דף הבית</NavLink>}
       <div className={`navbar-links${open ? ' open' : ''}`}>
         {token && (
           <>
-            <Link to="/" className="navbar-home-desktop" onClick={close}>דף הבית</Link>
-            <Link to="/teachers" onClick={close}>צוות</Link>
-            {isAdmin && <Link to="/teacherForm" onClick={close}>הוספת איש צוות</Link>}
-            <Link to="/pupiles" onClick={close}>תלמידים</Link>
-            <Link to="/pupilForm" onClick={close}>הוספת תלמיד</Link>
+            <NavLink to="/" className="navbar-home-desktop" onClick={close}>דף הבית</NavLink>
+            <NavLink to="/teachers" onClick={close}>צוות</NavLink>
+            {isAdmin && <NavLink to="/teacherForm" onClick={close}>הוספת איש צוות</NavLink>}
+            <NavLink to="/pupiles" onClick={close}>תלמידים</NavLink>
+            <NavLink to="/pupilForm" onClick={close}>הוספת תלמיד</NavLink>
           </>
         )}
         <span className="navbar-auth">
@@ -46,8 +46,8 @@ export default function Navbar() {
             <button className="danger" onClick={handleLogout}>התנתקות</button>
           ) : (
             <>
-              <Link to="/login" onClick={close}>התחברות</Link>
-              <Link to="/register" onClick={close}>הרשמה</Link>
+              <NavLink to="/login" onClick={close}>התחברות</NavLink>
+              <NavLink to="/register" onClick={close}>הרשמה</NavLink>
             </>
           )}
         </span>
