@@ -3,5 +3,6 @@ export type User = {
     user_name: string
     email: string
     password: string
-    role: 'user' | 'admin'
+    // admin = היועצת בלבד (ניהול צוות); superuser = בעל תפקיד שרואה את כל הכיתות ללא ניהול צוות
+    role: 'user' | 'superuser' | 'admin'
   }

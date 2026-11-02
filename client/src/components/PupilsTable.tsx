@@ -37,7 +37,8 @@ export default function PupilsTable() {
     const navigate = useNavigate()
     const [pupils, setPupils] = useState<Pupil[]>([])
     const [error, setError] = useState('')
-    const isAdmin = getStoredUser()?.role === 'admin'
+    // admin ו-superuser רואים את כל הכיתות ויכולים לסנן לפי כיתה
+    const seesAllClasses = ['admin', 'superuser'].includes(getStoredUser()?.role ?? '')
     const [selectedClass, setSelectedClass] = useState('')
     const [search, setSearch] = useState('')
     const [wideTable, setWideTable] = useState(false)
@@ -100,7 +101,7 @@ export default function PupilsTable() {
                 placeholder="חיפוש..."
             />
             <div className="filter-row2">
-                {isAdmin && (
+                {seesAllClasses && (
                     <label>
                         כיתה:{' '}
                         <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>

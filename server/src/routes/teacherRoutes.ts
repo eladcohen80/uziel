@@ -7,8 +7,9 @@ const router = Router()
 router.get('/available', getAvailableTeachers)
 
 router.use(authMiddleware)
+// הוספה/עריכה/מחיקה של אנשי צוות מותרות ליועצת (admin) בלבד
 router.post('/', isAdmin, createTeacher)
-router.put('/:id', updateTeacher)
+router.put('/:id', isAdmin, updateTeacher)
 router.delete('/:id', isAdmin, deleteTeacher)
 router.get('/', getTeachers)
 router.get('/:id', getTeacherById)

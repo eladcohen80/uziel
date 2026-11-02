@@ -5,7 +5,7 @@ export default function TeacherFormPage() {
   return (
     <div className="page">
       <Navbar />
-      <h1>טופס מורה</h1>
+      <h1>טופס איש צוות</h1>
       <TeacherForm />
     </div>
   )

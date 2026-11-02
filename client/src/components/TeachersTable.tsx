@@ -29,6 +29,7 @@ function compareTeachers(a: Teacher, b: Teacher, key: TeacherSortKey): number {
 
 export default function TeachersTable() {
     const navigate = useNavigate()
+    // רק היועצת (admin) יכולה לערוך ולמחוק אנשי צוות
     const isAdmin = getStoredUser()?.role === 'admin'
     const [teachers, setTeachers] = useState<Teacher[]>([])
     const [error, setError] = useState('')
@@ -72,9 +73,11 @@ export default function TeachersTable() {
                         <td>{teacher.name}</td>
                         <td>{teacherClassLabel(teacher)}</td>
                         <td className="actions">
-                            <button onClick={() => navigate(`/teacherForm/${teacher.id}`)}>עריכה</button>
                             {isAdmin && (
-                                <button className="danger" onClick={() => handleDelete(teacher)}>מחיקה</button>
+                                <>
+                                    <button onClick={() => navigate(`/teacherForm/${teacher.id}`)}>עריכה</button>
+                                    <button className="danger" onClick={() => handleDelete(teacher)}>מחיקה</button>
+                                </>
                             )}
                         </td>
                     </tr>

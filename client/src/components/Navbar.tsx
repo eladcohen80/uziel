@@ -36,7 +36,7 @@ export default function Navbar() {
           <>
             <Link to="/" className="navbar-home-desktop" onClick={close}>דף הבית</Link>
             <Link to="/teachers" onClick={close}>צוות</Link>
-            {isAdmin && <Link to="/teacherForm" onClick={close}>הוספת מורה</Link>}
+            {isAdmin && <Link to="/teacherForm" onClick={close}>הוספת איש צוות</Link>}
             <Link to="/pupiles" onClick={close}>תלמידים</Link>
             <Link to="/pupilForm" onClick={close}>הוספת תלמיד</Link>
           </>

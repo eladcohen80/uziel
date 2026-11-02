@@ -30,6 +30,10 @@ function AutoLogoutHandler() {
       if (response && response.ok) {
         const data = await response.json();
         localStorage.setItem('token', data.token);
+        // ההרשאה עלולה להשתנות על ידי אדמין - מעדכנים את המשתמש השמור
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
       }
     } catch (error) {
       console.error('Failed to auto-refresh token:', error);

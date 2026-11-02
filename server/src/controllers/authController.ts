@@ -26,12 +26,12 @@ export const register = async (req: Request, res: Response) => {
         if (existing.length > 0) {
             return res.status(409).json({ error: 'האימייל כבר רשום' })
         }
-        const teacher = await sql`SELECT id, position FROM teachers WHERE id = ${teacher_id} AND user_id IS NULL`
+        const teacher = await sql`SELECT id, role FROM teachers WHERE id = ${teacher_id} AND user_id IS NULL`
         if (teacher.length === 0) {
             return res.status(409).json({ error: 'המורה לא קיים או שכבר שויך למשתמש' })
         }
-        // בעל תפקיד (מנהלת/סגן מנהל/יועצת/רכז) מקבל הרשאות אדמין כדי לראות את כל הכיתות
-        const role = teacher[0].position ? 'admin' : 'user'
+        // ההרשאה נקבעת מראש על ידי היועצת (admin) שהוסיפה את איש הצוות
+        const role = teacher[0].role === 'admin' || teacher[0].role === 'superuser' ? teacher[0].role : 'user'
         const passwordHash = await bcrypt.hash(password, 10)
         const rows = await sql`
             INSERT INTO users (user_name, email, password, role)
@@ -143,15 +143,22 @@ export const refreshToken = async (req: Request, res: Response) => {
     try {
         // אימות הטוקן הקיים
         const decoded = jwt.verify(token, secret) as { user_id: number; email: string; role: string }
-        
+
+        // ההרשאה נשלפת מה-DB ולא מהטוקן הישן, כדי ששינוי הרשאות על ידי אדמין יכנס לתוקף ברענון
+        const rows = await sql`SELECT user_id, user_name, email, role FROM users WHERE user_id = ${decoded.user_id}`
+        if (rows.length === 0) {
+            return res.status(401).json({ error: 'Invalid or expired token' })
+        }
+        const user = rows[0]
+
         // יצירת טוקן חדש לחצי שעה נוספת עבור אותו משתמש
         const newToken = signToken({
-            user_id: decoded.user_id,
-            email: decoded.email,
-            role: decoded.role
+            user_id: user.user_id,
+            email: user.email,
+            role: user.role
         })
 
-        res.json({ token: newToken })
+        res.json({ token: newToken, user: { user_id: user.user_id, user_name: user.user_name, email: user.email, role: user.role } })
     } catch (error) {
         // אם הטוקן פג תוקף לחלוטין או לא תקין, השרת יחזיר 401 והריאקט יבצע התנתקות
         res.status(401).json({ error: 'Invalid or expired token' })

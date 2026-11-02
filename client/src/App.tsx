@@ -32,9 +32,9 @@ function App() {
     >
       <Route path="/" element={<Homepage />} />
       <Route path="/teachers" element={<TeachersPage />} />
+      {/* הוספה ועריכה של אנשי צוות מותרות ליועצת (admin) בלבד */}
       <Route path="/teacherForm" element={<ProtectedRoute adminOnly><TeacherFormPage /></ProtectedRoute>} />
-      <Route path="/teacherForm/:id" element={<ProtectedRoute><TeacherFormPage /></ProtectedRoute>} />
-      <Route path="/teacherForm/:id" element={<ProtectedRoute><TeacherFormPage /></ProtectedRoute>} />
+      <Route path="/teacherForm/:id" element={<ProtectedRoute adminOnly><TeacherFormPage /></ProtectedRoute>} />
       <Route path="/pupiles" element={<ProtectedRoute><PupilsPage /></ProtectedRoute>} />
       <Route path="/pupilForm" element={<ProtectedRoute><PupilFormPage /></ProtectedRoute>} />
       <Route path="/pupilForm/:id" element={<ProtectedRoute><PupilFormPage /></ProtectedRoute>} />

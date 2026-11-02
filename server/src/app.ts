@@ -178,10 +178,10 @@ async function initDb() {
         await sql`DROP VIEW IF EXISTS pupils_view`
         await sql`ALTER TABLE pupils DROP COLUMN IF EXISTS class_name`
     }
-    // הרב יהונתן בונה - סגן מנהל; בעל תפקיד ללא כיתה, יקבל role=admin בהרשמה
+    // הרב יהונתן בונה - סגן מנהל; בעל תפקיד ללא כיתה, יקבל role=superuser בהרשמה (צפייה בכל הכיתות)
     await sql`
-        INSERT INTO teachers (name, grade, position)
-        SELECT 'הרב יהונתן בונה', NULL, 'סגן מנהל'
+        INSERT INTO teachers (name, grade, position, role)
+        SELECT 'הרב יהונתן בונה', NULL, 'סגן מנהל', 'superuser'
         WHERE NOT EXISTS (SELECT 1 FROM teachers WHERE name = 'הרב יהונתן בונה')
     `
     // יוצרים מחדש את ה-view רק אם הוא חסר או חסרות בו עמודות - drop/create בכל אתחול מתנגש באתחול מקביל של serverless functions

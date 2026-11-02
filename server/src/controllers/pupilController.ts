@@ -3,9 +3,9 @@ import sql from '../db'
 import { AuthRequest } from '../middleware/authMiddleware'
 import { classSuffix, classToStartYear, isValidClass } from '../utils/grades'
 
-// null = אדמין (ללא הגבלה); מחרוזת = הכיתה היחידה המותרת; undefined = אין גישה
+// null = admin/superuser (ללא הגבלה); מחרוזת = הכיתה היחידה המותרת; undefined = אין גישה
 function allowedClass(req: AuthRequest): string | null | undefined {
-    if (req.user?.role === 'admin') return null
+    if (req.user?.role === 'admin' || req.user?.role === 'superuser') return null
     return req.user?.grade ?? undefined
 }
 
