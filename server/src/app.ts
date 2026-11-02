@@ -189,9 +189,13 @@ async function initDb() {
             END IF;
         END $$
     `)
-    // בעלי תפקידים שהוגדרו admin לפני ההפרדה ל-superuser - הופכים ל-superuser; היועצת מוגדרת admin ידנית
-    await sql`UPDATE teachers SET role = 'superuser' WHERE role = 'admin' AND position IS DISTINCT FROM 'יועצת'`
-    await sql`UPDATE users SET role = 'superuser' WHERE role = 'admin' AND user_id NOT IN (SELECT user_id FROM teachers WHERE role = 'admin' AND user_id IS NOT NULL)`
+    // המרה חד-פעמית: בעלי תפקידים שהוגדרו admin לפני ההפרדה ל-superuser הופכים ל-superuser.
+    // מי שכבר admin (היועצת) לא נוגעים בו - ההמרה פועלת רק על admin שמקורו בבעל תפקיד ישן
+    await sql`UPDATE teachers SET role = 'superuser' WHERE role = 'admin' AND position IS NOT NULL AND position <> 'יועצת'`
+    await sql`UPDATE users SET role = 'superuser' WHERE role = 'admin' AND user_id IN (SELECT user_id FROM teachers WHERE role = 'superuser' AND user_id IS NOT NULL)`
+    // הגנה קבועה: היועצת תמיד admin, גם אם ההרשאה שונתה בטעות דרך הטופס או ישירות ב-DB
+    await sql`UPDATE teachers SET role = 'admin' WHERE position = 'יועצת' AND role <> 'admin'`
+    await sql`UPDATE users SET role = 'admin' WHERE role <> 'admin' AND user_id IN (SELECT user_id FROM teachers WHERE position = 'יועצת' AND user_id IS NOT NULL)`
     // הרב יהונתן בונה - סגן מנהל; בעל תפקיד ללא כיתה, יקבל role=superuser בהרשמה (צפייה בכל הכיתות)
     await sql`
         INSERT INTO teachers (name, grade, position, role)

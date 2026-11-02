@@ -22,10 +22,12 @@ export const createTeacher = async (req: Request, res: Response) => {
     const { name, grade, position, role } = req.body
     const parsed = parseGradeAndPosition(grade, position)
     if (!parsed) return res.status(400).json({ error: 'יש למלא כיתה או תפקיד' })
+    // היועצת מוגנת - ההרשאה שלה תמיד admin
+    const newRole = parsed.position === 'יועצת' ? 'admin' : parseRole(role)
     try {
         const newTeacher = await sql`
             INSERT INTO teachers (name, grade, position, role)
-            VALUES (${name}, ${parsed.grade}, ${parsed.position}, ${parseRole(role)})
+            VALUES (${name}, ${parsed.grade}, ${parsed.position}, ${newRole})
             RETURNING id, name, grade, position, role, user_id
         `
         res.status(201).json(newTeacher[0])
@@ -40,10 +42,12 @@ export const updateTeacher = async (req: AuthRequest, res: Response) => {
     const { name, grade, position, role } = req.body
     const parsed = parseGradeAndPosition(grade, position)
     if (!parsed) return res.status(400).json({ error: 'יש למלא כיתה או תפקיד' })
+    // היועצת מוגנת - ההרשאה שלה תמיד admin ולא ניתן לשנות אותה דרך הטופס
+    const newRole = parsed.position === 'יועצת' ? 'admin' : parseRole(role)
     try {
         const updatedTeacher = await sql`
             UPDATE teachers
-            SET name = ${name}, grade = ${parsed.grade}, position = ${parsed.position}, role = ${parseRole(role)}
+            SET name = ${name}, grade = ${parsed.grade}, position = ${parsed.position}, role = ${newRole}
             WHERE id = ${id}
             RETURNING id, name, grade, position, role, user_id
         `
@@ -52,7 +56,7 @@ export const updateTeacher = async (req: AuthRequest, res: Response) => {
         }
         // אם איש הצוות כבר שויך למשתמש - מעדכנים גם את ההרשאה שלו, כדי שהשינוי יכנס לתוקף
         if (updatedTeacher[0].user_id) {
-            await sql`UPDATE users SET role = ${parseRole(role)} WHERE user_id = ${updatedTeacher[0].user_id}`
+            await sql`UPDATE users SET role = ${newRole} WHERE user_id = ${updatedTeacher[0].user_id}`
         }
         res.json(updatedTeacher[0])
     } catch (error) {
