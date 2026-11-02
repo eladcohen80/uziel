@@ -73,7 +73,8 @@ async function initDbWithRetry(attempts = 3) {
 
 // גרסת הסכמה - לעלות בכל שינוי ב-initDb. האתחול רץ פעם אחת בלבד ולא בכל cold start,
 // כדי למנוע התנגשויות קטלוג כשכמה serverless functions עולים במקביל ב-Vercel
-const SCHEMA_VERSION = 1
+// 2 = הרשאות אנשי צוות: עמודת role ב-teachers (user/superuser/admin)
+const SCHEMA_VERSION = 2
 
 async function initDb() {
     await sql`
@@ -178,6 +179,19 @@ async function initDb() {
         await sql`DROP VIEW IF EXISTS pupils_view`
         await sql`ALTER TABLE pupils DROP COLUMN IF EXISTS class_name`
     }
+    // הרשאות איש צוות: admin = היועצת בלבד (ניהול צוות); superuser = צפייה בכל הכיתות; user = הכיתה שלו בלבד
+    await sql`ALTER TABLE teachers ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user'`
+    await allowExists(sql`
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'teachers_role_check') THEN
+                ALTER TABLE teachers ADD CONSTRAINT teachers_role_check CHECK (role IN ('user', 'superuser', 'admin'));
+            END IF;
+        END $$
+    `)
+    // בעלי תפקידים שהוגדרו admin לפני ההפרדה ל-superuser - הופכים ל-superuser; היועצת מוגדרת admin ידנית
+    await sql`UPDATE teachers SET role = 'superuser' WHERE role = 'admin' AND position IS DISTINCT FROM 'יועצת'`
+    await sql`UPDATE users SET role = 'superuser' WHERE role = 'admin' AND user_id NOT IN (SELECT user_id FROM teachers WHERE role = 'admin' AND user_id IS NOT NULL)`
     // הרב יהונתן בונה - סגן מנהל; בעל תפקיד ללא כיתה, יקבל role=superuser בהרשמה (צפייה בכל הכיתות)
     await sql`
         INSERT INTO teachers (name, grade, position, role)

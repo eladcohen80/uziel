@@ -498,6 +498,25 @@ button.danger:hover {
   }
 }
 
+/* טבלת הצוות קטנה - רוחב לפי התוכן ולא פרוסה על כל העמוד */
+@media (min-width: 701px) {
+  .teachers-table-wrap {
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  .teachers-table-wrap table {
+    width: auto;
+    table-layout: auto;
+  }
+
+  .teachers-table-wrap th,
+  .teachers-table-wrap td {
+    white-space: nowrap;
+  }
+}
+
 /* במובייל - התאמות נוספות לגלילה האופקית של הטבלה */
 @media (max-width: 700px) {
   .table-wrap {
