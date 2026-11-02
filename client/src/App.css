@@ -261,6 +261,8 @@ button.danger:hover {
   max-width: 520px;
   /* טפסים צרים מהעמוד ממורכזים ולא דבוקים לימין */
   margin-inline: auto;
+  /* מרווח מהנאבאר אחרי שהכותרות הוסרו מהדפים */
+  margin-top: 12px;
   padding: 24px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -403,7 +405,6 @@ button.danger:hover {
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 12px;
   margin-bottom: 12px;
 }
 
@@ -471,8 +472,6 @@ button.danger:hover {
   overflow-x: auto;
   /* הריבוע לא גדל מעבר לרוחב העמוד - הטבלה גוללת בתוכו */
   max-width: 100%;
-  /* מרווח מהנאבאר אחרי שהכותרות הוסרו מהדפים */
-  margin-top: 12px;
 }
 
 /* בדסקטופ עמודים עם טבלה מנצלים רוחב גדול יותר */
