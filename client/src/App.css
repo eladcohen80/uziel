@@ -504,6 +504,8 @@ button.danger:hover {
     width: fit-content;
     max-width: 100%;
     margin-inline: auto;
+    /* בתוך עמוד flex הגובה נקבע לפי התוכן - הגלילה הפנימית מופעלת רק כשאין מקום */
+    flex: 0 1 auto;
   }
 
   .teachers-table-wrap table {
@@ -667,8 +669,9 @@ td.actions {
   }
 }
 
-/* עמוד התלמידים: כל העמוד נשאר קבוע - הנאבאר, הכותרת ושורת הסינון לא זזים, ורק הטבלה גוללת */
-.pupils-page {
+/* עמודי טבלאות (תלמידים וצוות): כל העמוד נשאר קבוע - הנאבאר, הכותרת ושורת הסינון לא זזים, ורק הטבלה גוללת */
+.pupils-page,
+.teachers-page {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -677,19 +680,22 @@ td.actions {
 }
 
 /* הטבלה תופסת את הגובה שנותר בעמוד והגלילה האנכית מתבצעת בתוכה בלבד */
-.pupils-page .table-wrap {
+.pupils-page .table-wrap,
+.teachers-page .table-wrap {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
 }
 
 /* overflow: hidden על table הופך אותו למיכל הגלילה של ה-sticky ושובר את דביקות הכותרות - העיגול פינות מטופל על ידי ה-table-wrap */
-.pupils-page .table-wrap table {
+.pupils-page .table-wrap table,
+.teachers-page .table-wrap table {
   overflow: visible;
 }
 
 /* כותרות הטבלה דביקות לראש הטבלה ומופיעות תמיד, גם בגלילה למטה */
-.pupils-page .table-wrap thead th {
+.pupils-page .table-wrap thead th,
+.teachers-page .table-wrap thead th {
   position: sticky;
   top: 0;
   z-index: 2;
@@ -699,7 +705,8 @@ td.actions {
 
 /* תא הכותרת של עמודת הפעולות דביק לשני הכיוונים - משלב את צל הצד ואת הקו התחתון */
 @media (min-width: 701px) {
-  .pupils-page .table-wrap thead th:last-child {
+  .pupils-page .table-wrap thead th:last-child,
+  .teachers-page .table-wrap thead th:last-child {
     box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.15), 0 1px 0 var(--border);
   }
 }
