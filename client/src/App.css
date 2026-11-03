@@ -496,16 +496,21 @@ button.danger:hover {
     white-space: normal;
   }
 
-  /* בטבלת התלמידים המורחבת עמודות צרות מתאימות לתוכן - המקום שנותר מתחלק בין עמודות התוכן */
-  .full-wrap th:nth-child(2),
+  /* טבלת התלמידים המורחבת: רוחב עמודות לפי התוכן, עם תקרה - מעבר לתקרה הטקסט יורד שורה */
+  .full-wrap table {
+    table-layout: auto;
+  }
+
+  .full-wrap td {
+    max-width: 260px;
+    white-space: normal;
+  }
+
+  /* עמודות צרות נשארות בשורה אחת */
+  .full-wrap td:first-child,
   .full-wrap td:nth-child(2),
-  .full-wrap th:nth-child(3),
-  .full-wrap td:nth-child(3),
-  .full-wrap th:nth-child(9),
-  .full-wrap td:nth-child(9),
-  .full-wrap th:nth-child(10),
-  .full-wrap td:nth-child(10) {
-    width: 1%;
+  .full-wrap td.meetings-cell,
+  .full-wrap td.actions {
     white-space: nowrap;
   }
 }
@@ -576,6 +581,13 @@ td {
 /* עמודות תוכן רחבות לא נדחסות */
 td:not(:first-child):not(:nth-child(2)):not(.actions):not(.meetings-cell) {
   min-width: 140px;
+}
+
+/* בטבלת התלמידים המורחבת בדסקטופ אין רוחב מינימלי - העמודות מתאימות לתוכן */
+@media (min-width: 701px) {
+  .full-wrap td {
+    min-width: 0;
+  }
 }
 
 /* במובייל מצמצמים את הרוחב המינימלי כדי שהטבלה לא תרחיב את העמוד */
