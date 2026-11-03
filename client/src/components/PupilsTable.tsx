@@ -4,7 +4,7 @@ import * as XLSX from 'xlsx'
 import type { Pupil } from '../types/Pupil'
 import type { Meeting } from '../types/Meeting'
 import { deletePupil, getPupils } from '../services/pupilService'
-import { getAllMeetings } from '../services/meetingService'
+import { getAllMeetings, deleteMeeting } from '../services/meetingService'
 import { CLASSES, classLabel, classSortIndex } from '../utils/grades'
 import { getStoredUser } from '../services/authService'
 import { useTableSort, type SortDir } from '../hooks/useTableSort'
@@ -102,6 +102,20 @@ export default function PupilsTable() {
         workbook.Workbook = { Views: [{ RTL: true }] }
         XLSX.utils.book_append_sheet(workbook, worksheet, 'תלמידים')
         XLSX.writeFile(workbook, 'תלמידים.xlsx')
+    }
+
+    async function handleDeleteMeeting(meeting: Meeting) {
+        if (!window.confirm(`למחוק את הפגישה מתאריך ${formatMeetingDate(meeting.date)}?`)) return
+        try {
+            await deleteMeeting(meeting.id)
+            setMeetingsByPupil(prev => ({
+                ...prev,
+                [meeting.pupil_id]: (prev[meeting.pupil_id] ?? []).filter(m => m.id !== meeting.id)
+            }))
+            setSelectedMeeting(null)
+        } catch {
+            setError('שגיאה במחיקת הפגישה')
+        }
     }
 
     async function handleDelete(pupil: Pupil) {
@@ -240,6 +254,7 @@ export default function PupilsTable() {
                 </dl>
                 <div className="pupil-card-actions">
                     <button onClick={() => navigate(`/meetingForm/${selectedMeeting.id}`)}>עריכה</button>
+                    <button className="danger" onClick={() => handleDeleteMeeting(selectedMeeting)}>מחק פגישה</button>
                     <button onClick={() => setSelectedMeeting(null)}>סגירה</button>
                 </div>
             </div>
