@@ -495,6 +495,19 @@ button.danger:hover {
   .table-wrap td:nth-child(2) {
     white-space: normal;
   }
+
+  /* בטבלת התלמידים המורחבת עמודות צרות מתאימות לתוכן - המקום שנותר מתחלק בין עמודות התוכן */
+  .full-wrap th:nth-child(2),
+  .full-wrap td:nth-child(2),
+  .full-wrap th:nth-child(3),
+  .full-wrap td:nth-child(3),
+  .full-wrap th:nth-child(9),
+  .full-wrap td:nth-child(9),
+  .full-wrap th:nth-child(10),
+  .full-wrap td:nth-child(10) {
+    width: 1%;
+    white-space: nowrap;
+  }
 }
 
 /* טבלת הצוות קטנה - רוחב לפי התוכן ולא פרוסה על כל העמוד */
@@ -561,13 +574,13 @@ td {
 }
 
 /* עמודות תוכן רחבות לא נדחסות */
-td:not(:first-child):not(:nth-child(2)):not(.actions) {
+td:not(:first-child):not(:nth-child(2)):not(.actions):not(.meetings-cell) {
   min-width: 140px;
 }
 
 /* במובייל מצמצמים את הרוחב המינימלי כדי שהטבלה לא תרחיב את העמוד */
 @media (max-width: 700px) {
-  td:not(:first-child):not(:nth-child(2)):not(.actions) {
+  td:not(:first-child):not(:nth-child(2)):not(.actions):not(.meetings-cell) {
     min-width: 120px;
   }
 
