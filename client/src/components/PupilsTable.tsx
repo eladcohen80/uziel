@@ -21,8 +21,15 @@ function formatMeetingDate(date: string): string {
     return new Date(date).toLocaleDateString('he-IL')
 }
 
+// Postgres עלול להחזיר מערך כמחרוזת {"א","ב"} - מפרסרים לרשימה מופרדת בפסיקים
 function participantsText(participants: Meeting['participants']): string {
-    return Array.isArray(participants) ? participants.join(', ') : String(participants)
+    if (Array.isArray(participants)) return participants.join(', ')
+    return String(participants)
+        .replace(/^\{|\}$/g, '')
+        .split(',')
+        .map(p => p.trim().replace(/^"|"$/g, ''))
+        .filter(Boolean)
+        .join(', ')
 }
 
 function comparePupils(a: Pupil, b: Pupil, key: PupilSortKey, dir: SortDir): number {
