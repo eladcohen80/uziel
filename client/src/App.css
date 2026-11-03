@@ -776,6 +776,15 @@ td.actions button {
   font-size: 14px;
 }
 
+/* כפתור "הוסף פגישה" בטבלה המורחבת - כיתוב קטן בשתי שורות, באותו גובה של שאר הכפתורים */
+.full-wrap td.actions button:first-child {
+  font-size: 11px;
+  line-height: 1.05;
+  max-width: 54px;
+  white-space: normal;
+  padding: 4px 5px;
+}
+
 td.actions button + button {
   margin-inline-start: 8px;
 }
