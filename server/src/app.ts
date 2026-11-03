@@ -3,6 +3,7 @@ import sql from './db'
 import teacherRoutes from './routes/teacherRoutes'
 import pupilRoutes from './routes/pupilRoutes'
 import authRoutes from './routes/authRoutes'
+import meetingRoutes from './routes/meetingRoutes'
 
 const app = express()
 app.use(express.json())
@@ -43,6 +44,7 @@ app.use('/api', async (_req, res, next) => {
 app.use('/api/teachers', teacherRoutes)
 app.use('/api/pupils', pupilRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/meetings', meetingRoutes)
 
 // מתעלם משגיאות "כבר קיים" - קורה כשכמה serverless functions מאתחלות את מסד הנתונים במקביל ב-Vercel
 async function allowExists(query: PromiseLike<unknown>) {
@@ -74,7 +76,8 @@ async function initDbWithRetry(attempts = 3) {
 // גרסת הסכמה - לעלות בכל שינוי ב-initDb. האתחול רץ פעם אחת בלבד ולא בכל cold start,
 // כדי למנוע התנגשויות קטלוג כשכמה serverless functions עולים במקביל ב-Vercel
 // 2 = הרשאות אנשי צוות: עמודת role ב-teachers (user/superuser/admin)
-const SCHEMA_VERSION = 2
+// 3 = טבלת meetings: פגישות של תלמידים
+const SCHEMA_VERSION = 3
 
 async function initDb() {
     await sql`
@@ -154,6 +157,17 @@ async function initDb() {
             END IF;
         END $$
     `)
+    // פגישות של תלמידים; pupil_id הוא UUID כמו pupils.id. מחיקת תלמיד מוחקת גם את הפגישות שלו
+    await sql`
+        CREATE TABLE IF NOT EXISTS meetings (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            date DATE NOT NULL,
+            subject TEXT NOT NULL,
+            participants TEXT[] NOT NULL,
+            summary_and_recommendations TEXT NOT NULL,
+            pupil_id UUID NOT NULL REFERENCES pupils(id) ON DELETE CASCADE
+        )
+    `
     // בטבלה קיימת שלא נוצרה ע"י initDb העמודה עלולה להיות חסרה
     await sql`ALTER TABLE pupils ADD COLUMN IF NOT EXISTS startyeargrade1 INTEGER`
     // class_suffix: המספר (1/2/3) נשמר קבוע; האות נגזרת משנת ההתחלה ב-view. במקדמות נשמר השם המלא.

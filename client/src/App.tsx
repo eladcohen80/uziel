@@ -4,6 +4,7 @@ import TeachersPage from './pages/TeachersPage'
 import TeacherFormPage from './pages/TeacherFormPage'
 import PupilsPage from './pages/PupilsPage'
 import PupilFormPage from './pages/PupilFormPage'
+import MeetingFormPage from './pages/MeetingFormPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
@@ -38,6 +39,8 @@ function App() {
       <Route path="/pupiles" element={<ProtectedRoute><PupilsPage /></ProtectedRoute>} />
       <Route path="/pupilForm" element={<ProtectedRoute><PupilFormPage /></ProtectedRoute>} />
       <Route path="/pupilForm/:id" element={<ProtectedRoute><PupilFormPage /></ProtectedRoute>} />
+      <Route path="/meetingForm" element={<ProtectedRoute><MeetingFormPage /></ProtectedRoute>} />
+      <Route path="/meetingForm/:id" element={<ProtectedRoute><MeetingFormPage /></ProtectedRoute>} />
     </Route>
   </Routes>
 );

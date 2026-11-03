@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as XLSX from 'xlsx'
 import type { Pupil } from '../types/Pupil'
+import type { Meeting } from '../types/Meeting'
 import { deletePupil, getPupils } from '../services/pupilService'
+import { getAllMeetings } from '../services/meetingService'
 import { CLASSES, classLabel, classSortIndex } from '../utils/grades'
 import { getStoredUser } from '../services/authService'
 import { useTableSort, type SortDir } from '../hooks/useTableSort'
@@ -13,6 +15,14 @@ type PupilSortKey = 'name' | 'className' | 'Integration' | 'Diagnosis' | 'Educat
 
 function ExcelIcon() {
     return <img src={excelIcon} width="22" height="22" aria-hidden="true" alt="" />
+}
+
+function formatMeetingDate(date: string): string {
+    return new Date(date).toLocaleDateString('he-IL')
+}
+
+function participantsText(participants: Meeting['participants']): string {
+    return Array.isArray(participants) ? participants.join(', ') : String(participants)
 }
 
 function comparePupils(a: Pupil, b: Pupil, key: PupilSortKey, dir: SortDir): number {
@@ -43,6 +53,8 @@ export default function PupilsTable() {
     const [search, setSearch] = useState('')
     const [wideTable, setWideTable] = useState(false)
     const [selectedPupil, setSelectedPupil] = useState<Pupil | null>(null)
+    const [meetingsByPupil, setMeetingsByPupil] = useState<Record<string, Meeting[]>>({})
+    const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
     const { sortColumn, sortDir, toggleSort } = useTableSort<PupilSortKey>('className')
     const query = search.trim().toLowerCase()
     const visiblePupils = pupils.filter(p =>
@@ -56,6 +68,20 @@ export default function PupilsTable() {
         getPupils()
             .then(setPupils)
             .catch(() => setError('שגיאה בטעינת התלמידים'))
+        getAllMeetings()
+            .then(meetings => {
+                const grouped: Record<string, Meeting[]> = {}
+                for (const meeting of meetings) {
+                    (grouped[meeting.pupil_id] ??= []).push(meeting)
+                }
+                // התאריך האחרון למעלה
+                for (const list of Object.values(grouped)) {
+                    list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                }
+                setMeetingsByPupil(grouped)
+            })
+            // שגיאה בטעינת הפגישות לא חוסמת את טבלת התלמידים
+            .catch(() => {})
     }, [])
 
     function exportToExcel() {
@@ -128,6 +154,7 @@ export default function PupilsTable() {
                 <tr>
                     <SortableTh label="שם" column="name" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <SortableTh label="כיתה" column="className" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
+                    <th>פגישות</th>
                     <th>פרטים</th>
                 </tr>
             </thead>
@@ -136,13 +163,20 @@ export default function PupilsTable() {
                     <tr key={pupil.id}>
                         <td>{pupil.name}</td>
                         <td>{classLabel(pupil.className)}</td>
+                        <td className="meetings-cell">
+                            {(meetingsByPupil[pupil.id] ?? []).map(meeting => (
+                                <button key={meeting.id} type="button" className="meeting-date-link" onClick={() => setSelectedMeeting(meeting)}>
+                                    {formatMeetingDate(meeting.date)}
+                                </button>
+                            ))}
+                        </td>
                         <td className="actions">
                             <button onClick={() => setSelectedPupil(pupil)}>פרטים</button>
                         </td>
                     </tr>
                 ))}
                 {sortedPupils.length === 0 && (
-                    <tr><td colSpan={3} className="empty">אין תלמידים להצגה</td></tr>
+                    <tr><td colSpan={4} className="empty">אין תלמידים להצגה</td></tr>
                 )}
             </tbody>
         </table>
@@ -159,6 +193,7 @@ export default function PupilsTable() {
                     <SortableTh label="תמיכה ריגשית" column="Emotionalresponse" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <SortableTh label="מענים נוספים" column="Otherresponse" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <SortableTh label="הערות" column="Notes" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
+                    <th>פגישות</th>
                     <th>פעולות</th>
                 </tr>
             </thead>
@@ -173,18 +208,43 @@ export default function PupilsTable() {
                         <td>{pupil.Emotionalresponse}</td>
                         <td>{pupil.Otherresponse}</td>
                         <td>{pupil.Notes}</td>
+                        <td className="meetings-cell">
+                            {(meetingsByPupil[pupil.id] ?? []).map(meeting => (
+                                <button key={meeting.id} type="button" className="meeting-date-link" onClick={() => setSelectedMeeting(meeting)}>
+                                    {formatMeetingDate(meeting.date)}
+                                </button>
+                            ))}
+                        </td>
                         <td className="actions">
+                            <button onClick={() => navigate(`/meetingForm?pupil_id=${pupil.id}`)}>הוסף פגישה</button>
                             <button onClick={() => navigate(`/pupilForm/${pupil.id}`)}>עריכה</button>
                             <button className="danger" onClick={() => handleDelete(pupil)}>מחיקה</button>
                         </td>
                     </tr>
                 ))}
                 {sortedPupils.length === 0 && (
-                    <tr><td colSpan={9} className="empty">אין תלמידים להצגה</td></tr>
+                    <tr><td colSpan={10} className="empty">אין תלמידים להצגה</td></tr>
                 )}
             </tbody>
         </table>
         </div>
+        {selectedMeeting && (
+        <div className="modal-overlay" onClick={() => setSelectedMeeting(null)}>
+            <div className="pupil-card" onClick={e => e.stopPropagation()}>
+                <h2>פרטי פגישה</h2>
+                <dl>
+                    <div><dt>תאריך</dt><dd>{formatMeetingDate(selectedMeeting.date)}</dd></div>
+                    <div><dt>נושא</dt><dd>{selectedMeeting.subject}</dd></div>
+                    <div><dt>משתתפים</dt><dd>{participantsText(selectedMeeting.participants)}</dd></div>
+                    <div><dt>סיכום והמלצות</dt><dd>{selectedMeeting.summary_and_recommendations}</dd></div>
+                </dl>
+                <div className="pupil-card-actions">
+                    <button onClick={() => navigate(`/meetingForm/${selectedMeeting.id}`)}>עריכה</button>
+                    <button onClick={() => setSelectedMeeting(null)}>סגירה</button>
+                </div>
+            </div>
+        </div>
+        )}
         {selectedPupil && (
         <div className="modal-overlay" onClick={() => setSelectedPupil(null)}>
             <div className="pupil-card" onClick={e => e.stopPropagation()}>
@@ -199,6 +259,7 @@ export default function PupilsTable() {
                     <div><dt>הערות</dt><dd>{selectedPupil.Notes}</dd></div>
                 </dl>
                 <div className="pupil-card-actions">
+                    <button onClick={() => navigate(`/meetingForm?pupil_id=${selectedPupil.id}`)}>הוסף פגישה</button>
                     <button onClick={() => navigate(`/pupilForm/${selectedPupil.id}`)}>עריכה</button>
                     <button className="danger" onClick={() => handleDelete(selectedPupil)}>מחיקה</button>
                     <button onClick={() => setSelectedPupil(null)}>סגירה</button>
