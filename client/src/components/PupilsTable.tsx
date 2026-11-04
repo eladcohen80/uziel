@@ -237,7 +237,7 @@ export default function PupilsTable() {
                             ))}
                         </td>
                         <td className="actions">
-                            <button onClick={() => navigate(`/meetingForm?pupil_id=${pupil.id}`)}>הוסף פגישה</button>
+                            <button onClick={() => navigate(`/meetingForm?pupil_id=${pupil.id}`)}>פגישה</button>
                             <button onClick={() => navigate(`/pupilForm/${pupil.id}`)}>עריכה</button>
                             <button className="danger" onClick={() => handleDelete(pupil)}>מחיקה</button>
                         </td>
