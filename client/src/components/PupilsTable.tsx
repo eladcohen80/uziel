@@ -281,7 +281,7 @@ export default function PupilsTable() {
                     <div><dt>הערות</dt><dd>{selectedPupil.Notes}</dd></div>
                 </dl>
                 <div className="pupil-card-actions">
-                    <button onClick={() => navigate(`/meetingForm?pupil_id=${selectedPupil.id}`)}>הוסף פגישה</button>
+                    <button onClick={() => navigate(`/meetingForm?pupil_id=${selectedPupil.id}`)}>פגישה</button>
                     <button onClick={() => navigate(`/pupilForm/${selectedPupil.id}`)}>עריכה</button>
                     <button className="danger" onClick={() => handleDelete(selectedPupil)}>מחיקה</button>
                     <button onClick={() => setSelectedPupil(null)}>סגירה</button>
