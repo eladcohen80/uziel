@@ -889,7 +889,7 @@ td.actions button + button {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: 16px;
+  margin-top: 8px;
 }
 
 .pupil-card-actions button {
