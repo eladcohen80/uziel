@@ -260,7 +260,7 @@ export default function PupilsTable() {
         </table>
         </div>
         {selectedMeeting && (
-        <div className="modal-overlay" onClick={() => setSelectedMeeting(null)}>
+        <div className="modal-overlay modal-top" onClick={() => setSelectedMeeting(null)}>
             <div className="pupil-card" onClick={e => e.stopPropagation()}>
                 <h2>פרטי פגישה</h2>
                 <dl>
