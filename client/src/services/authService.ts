@@ -1,4 +1,5 @@
 import { API_BASE } from './config'
+import { clearPupilsFilterStorage } from '../hooks/usePupilsFilter'
 
 const API_URL = `${API_BASE}/api/auth`
 
@@ -71,4 +72,5 @@ export function getStoredUser(): AuthUser | null {
 export function logout() {
   localStorage.removeItem('token')
   localStorage.removeItem('user')
+  clearPupilsFilterStorage()
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as XLSX from 'xlsx'
 import type { Pupil } from '../types/Pupil'
@@ -43,6 +43,47 @@ function comparePupils(a: Pupil, b: Pupil, key: PupilSortKey, dir: SortDir): num
     const bValue = (b[key] ?? '').trim()
     if (!aValue !== !bValue) return aValue ? -1 : 1
     return comparePupils(a, b, 'className', dir)
+}
+
+// תא תוכן בטבלה: מציג עד 3 שורות; אם התוכן ארוך יותר, כפתור "..." בסוף השורה השלישית
+// מרחיב את כל התוכן, ובסוף התוכן המורחב מופיע כפתור צמצום חזרה
+function ClampedCell({ text }: { text?: string }) {
+    const [expanded, setExpanded] = useState(false)
+    const [overflows, setOverflows] = useState(false)
+    const cellRef = useRef<HTMLDivElement>(null)
+    // במדידה דרך ResizeObserver צריך את המצב העדכני בלי ליצור את הobserver מחדש
+    const expandedRef = useRef(false)
+    expandedRef.current = expanded
+
+    useEffect(() => {
+        setExpanded(false)
+        const el = cellRef.current
+        if (!el) return
+        // בודקים אם התוכן חורג מ-3 השורות המוצגות; במצב מורחב אין מה למדוד
+        const check = () => {
+            if (expandedRef.current) return
+            setOverflows(el.scrollHeight > el.clientHeight + 1)
+        }
+        check()
+        // הטבלה המורחבת מוסתרת/מוצגת וגודל העמודות משתנה - מודדים מחדש בכל שינוי גודל
+        const observer = new ResizeObserver(check)
+        observer.observe(el)
+        return () => observer.disconnect()
+    }, [text])
+
+    if (!text?.trim()) return null
+
+    return (
+        <div ref={cellRef} className={`clamped-cell${expanded ? ' expanded' : ''}`}>
+            {overflows && !expanded && (
+                <button type="button" className="clamp-toggle clamp-expand" onClick={() => setExpanded(true)} aria-label="הצג את כל התוכן">...</button>
+            )}
+            {text}
+            {overflows && expanded && (
+                <button type="button" className="clamp-toggle clamp-collapse" onClick={() => setExpanded(false)}>צמצום</button>
+            )}
+        </div>
+    )
 }
 
 export default function PupilsTable() {
@@ -200,12 +241,12 @@ export default function PupilsTable() {
                     <tr key={pupil.id}>
                         <td>{pupil.name}</td>
                         <td>{classLabel(pupil.className)}</td>
-                        <td>{pupil.Integration}</td>
-                        <td>{pupil.Diagnosis}</td>
-                        <td>{pupil.Educationalresponse}</td>
-                        <td>{pupil.Emotionalresponse}</td>
-                        <td>{pupil.Otherresponse}</td>
-                        <td>{pupil.Notes}</td>
+                        <td><ClampedCell text={pupil.Integration} /></td>
+                        <td><ClampedCell text={pupil.Diagnosis} /></td>
+                        <td><ClampedCell text={pupil.Educationalresponse} /></td>
+                        <td><ClampedCell text={pupil.Emotionalresponse} /></td>
+                        <td><ClampedCell text={pupil.Otherresponse} /></td>
+                        <td><ClampedCell text={pupil.Notes} /></td>
                         <td className="meetings-cell">
                             {(meetingsByPupil[pupil.id] ?? []).map(meeting => (
                                 <button key={meeting.id} type="button" className="meeting-date-link" onClick={() => setSelectedMeeting(meeting)}>

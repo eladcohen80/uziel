@@ -703,6 +703,40 @@ tbody tr:last-child td {
   border-bottom: none;
 }
 
+/* תאי תוכן בטבלת התלמידים: עד 3 שורות, עם כפתור "..." להרחבה וכפתור "צמצום" לכיווץ */
+.clamped-cell {
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.clamped-cell:not(.expanded) {
+  max-height: calc(3 * 1.5em);
+  overflow: hidden;
+}
+
+.clamp-toggle {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 6px;
+}
+
+.clamp-toggle:hover {
+  background: none;
+  text-decoration: underline;
+}
+
+/* ה"..." מוצף לסוף השורה השלישית (צד שמאל ב-RTL) והטקסט נשבר סביבו */
+.clamp-expand {
+  float: left;
+  margin-top: calc(2 * 1.5em);
+  line-height: 1.5;
+}
+
 td.empty {
   padding: 32px;
   text-align: center;

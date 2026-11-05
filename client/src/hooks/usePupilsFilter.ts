@@ -14,6 +14,18 @@ export type PupilsFilterContextValue = {
 
 export const PupilsFilterContext = createContext<PupilsFilterContextValue | null>(null)
 
+// הסינון נשמר ב-sessionStorage כדי שישרוד מעבר לעמוד העריכה וחזרה לטבלה
+export const PUPILS_FILTER_STORAGE_KEYS = {
+    search: 'pupilsFilter.search',
+    selectedClass: 'pupilsFilter.selectedClass'
+} as const
+
+// מתבצע בהתנתקות כדי שמשתמש אחר באותו טאב לא יראה את הסינון של קודמו
+export function clearPupilsFilterStorage() {
+    sessionStorage.removeItem(PUPILS_FILTER_STORAGE_KEYS.search)
+    sessionStorage.removeItem(PUPILS_FILTER_STORAGE_KEYS.selectedClass)
+}
+
 // מחזיר null מחוץ לעמוד התלמידים - שם הנאבאר לא מציג את פקדי הסינון
 export function usePupilsFilter() {
     return useContext(PupilsFilterContext)
