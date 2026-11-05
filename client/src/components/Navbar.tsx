@@ -42,7 +42,17 @@ export default function Navbar() {
       </button>
       {/* במובייל דף הבית מוצג לצד ההמבורגר ולא בתוך התפריט */}
       {token && <NavLink to="/" className="navbar-home" onClick={close}>דף הבית</NavLink>}
-      
+      {/* במובייל תיבת החיפוש מוצגת בשורת ההמבורגר; בדסקטופ היא חלק משורת הסינון */}
+      {pupilsFilter && (
+        <input
+          type="search"
+          className="navbar-search"
+          value={pupilsFilter.search}
+          onChange={e => pupilsFilter.setSearch(e.target.value)}
+          placeholder="חיפוש..."
+        />
+      )}
+
       <div className={`navbar-links${open ? ' open' : ''}`}>
         {token && (
           <>
@@ -56,12 +66,6 @@ export default function Navbar() {
       </div>
       {pupilsFilter && (
         <div className="navbar-filters">
-          <input
-            type="search"
-            value={pupilsFilter.search}
-            onChange={e => pupilsFilter.setSearch(e.target.value)}
-            placeholder="חיפוש..."
-          />
           {seesAllClasses && (
             <label>
               כיתה:{' '}

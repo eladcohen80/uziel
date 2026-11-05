@@ -155,7 +155,7 @@ body::before {
 }
 
 /* תיבות הסינון נראות כמו שאר התיבות באפליקציה, ללא השפעה ממצב כהה בטלפון */
-.navbar-filters input,
+.navbar-search,
 .navbar-filters select {
   padding: 6px 10px;
   border: 1px solid var(--border);
@@ -180,11 +180,7 @@ body::before {
   }
 
   /* תיבת החיפוש מתכווצת לפי הרוחב הפנוי כדי שהשורה לא תישבר */
-  .navbar-filters {
-    min-width: 0;
-  }
-
-  .navbar-filters input[type="search"] {
+  .navbar-search {
     flex: 1 1 auto;
     width: 140px;
     min-width: 60px;
@@ -228,15 +224,15 @@ body::before {
     padding: 2px 8px;
   }
 
-  /* שורת הסינון מוצגת על רוחב מלא מתחת לשורת ההמבורגר */
-  .navbar-filters {
-    flex-basis: 100%;
-  }
-
-  /* תיבת החיפוש ממלאת את הרוחב שנותר בשורה */
-  .navbar-filters input[type="search"] {
+  /* תיבת החיפוש ממלאת את הרוחב שנותר בשורת ההמבורגר */
+  .navbar-search {
     flex: 1;
     min-width: 0;
+  }
+
+  /* שורת הסינון (כיתה ויצוא לאקסל) מוצגת על רוחב מלא מתחת לשורת ההמבורגר */
+  .navbar-filters {
+    flex-basis: 100%;
   }
 
   .hamburger {
