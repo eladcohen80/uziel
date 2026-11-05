@@ -192,7 +192,7 @@ export default function PupilsTable() {
             <thead>
                 <tr>
                     <SortableTh label="שם" column="name" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
-                    <SortableTh label="כיתה" column="className" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />                    
+                    <SortableTh label="כיתה" column="className" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <th>פרטים</th>
                 </tr>
             </thead>
@@ -201,20 +201,13 @@ export default function PupilsTable() {
                     <tr key={pupil.id}>
                         <td>{pupil.name}</td>
                         <td>{classLabel(pupil.className)}</td>
-                        <td className="meetings-cell">
-                            {(meetingsByPupil[pupil.id] ?? []).map(meeting => (
-                                <button key={meeting.id} type="button" className="meeting-date-link" onClick={() => setSelectedMeeting(meeting)}>
-                                    {formatMeetingDate(meeting.date)}
-                                </button>
-                            ))}
-                        </td>
                         <td className="actions">
                             <button onClick={() => setSelectedPupil(pupil)}>פרטים</button>
                         </td>
                     </tr>
                 ))}
                 {sortedPupils.length === 0 && (
-                    <tr><td colSpan={4} className="empty">אין תלמידים להצגה</td></tr>
+                    <tr><td colSpan={3} className="empty">אין תלמידים להצגה</td></tr>
                 )}
             </tbody>
         </table>
@@ -296,6 +289,15 @@ export default function PupilsTable() {
                     <div><dt>תמיכה ריגשית</dt><dd>{selectedPupil.Emotionalresponse}</dd></div>
                     <div><dt>מענים נוספים</dt><dd>{selectedPupil.Otherresponse}</dd></div>
                     <div><dt>הערות</dt><dd>{selectedPupil.Notes}</dd></div>
+                    <div><dt>פגישות</dt><dd>
+                        {(meetingsByPupil[selectedPupil.id] ?? []).length === 0
+                            ? 'אין פגישות'
+                            : (meetingsByPupil[selectedPupil.id] ?? []).map(meeting => (
+                                <button key={meeting.id} type="button" className="meeting-date-link" onClick={() => setSelectedMeeting(meeting)}>
+                                    {formatMeetingDate(meeting.date)}
+                                </button>
+                            ))}
+                    </dd></div>
                 </dl>
                 <div className="pupil-card-actions">
                     <button onClick={() => navigate(`/meetingForm?pupil_id=${selectedPupil.id}`)}>פגישה</button>
