@@ -116,6 +116,7 @@ body::before {
   color: var(--text-h);
   text-decoration: none;
   font-size: 16px;
+  white-space: nowrap;
   transition: background 0.2s, color 0.2s;
 }
 
@@ -145,6 +146,58 @@ body::before {
   gap: 8px;
 }
 
+/* פקדי הסינון של טבלת התלמידים - מוצגים בנאבאר רק בעמוד התלמידים */
+.navbar-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* תיבות הסינון נראות כמו שאר התיבות באפליקציה, ללא השפעה ממצב כהה בטלפון */
+.navbar-filters input,
+.navbar-filters select {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 16px;
+}
+
+/* בדסקטופ כל האלמנטים בנאבאר מוצגים בשורה אחת */
+@media (min-width: 701px) {
+  .navbar,
+  .navbar-links,
+  .navbar-filters {
+    flex-wrap: nowrap;
+  }
+
+  /* ריווח צר יותר כדי שהכל ייכנס בשורה אחת */
+  .navbar a {
+    padding: 8px 10px;
+  }
+
+  /* תיבת החיפוש מתכווצת לפי הרוחב הפנוי כדי שהשורה לא תישבר */
+  .navbar-filters {
+    min-width: 0;
+  }
+
+  .navbar-filters input[type="search"] {
+    flex: 1 1 auto;
+    width: 140px;
+    min-width: 60px;
+  }
+}
+
+/* במסכים צרים יחסית מסתירים את הטקסט ליד אייקון היצוא - האייקון מספק את ההסבר */
+@media (min-width: 701px) and (max-width: 1200px) {
+  .export-excel > span {
+    display: none;
+  }
+}
+
 /* כפתור המבורגר - מוצג רק במובייל */
 .hamburger {
   display: none;
@@ -169,10 +222,21 @@ body::before {
 }
 
 @media (max-width: 700px) {
-  /* נאבאר צר - בגובה של שורת החיפוש, עם מרווח קטן מעל שורת הסינון */
+  /* נאבאר צר - שורת ההמבורגר, ומתחתיה שורת הסינון של טבלת התלמידים */
   .navbar {
     margin: 8px 0 5px;
     padding: 2px 8px;
+  }
+
+  /* שורת הסינון מוצגת על רוחב מלא מתחת לשורת ההמבורגר */
+  .navbar-filters {
+    flex-basis: 100%;
+  }
+
+  /* תיבת החיפוש ממלאת את הרוחב שנותר בשורה */
+  .navbar-filters input[type="search"] {
+    flex: 1;
+    min-width: 0;
   }
 
   .hamburger {
@@ -197,8 +261,10 @@ body::before {
     display: none;
   }
 
+  /* התפריט נפתח מתחת לשורת ההמבורגר; שורת הסינון נשארת מתחתיו */
   .navbar-links {
     display: none;
+    order: 2;
     flex-direction: column;
     align-items: stretch;
     flex-basis: 100%;
@@ -210,14 +276,27 @@ body::before {
   }
 
   .navbar-links a,
-  .navbar-links button {
+  .navbar-links button,
+  .navbar-auth a,
+  .navbar-auth button {
     text-align: start;
   }
 
+  /* ההתנתקות מוצגת רק כשהתפריט פתוח, מיד מתחת לקישורים */
   .navbar-auth {
+    display: none;
+    order: 3;
     margin-inline-start: 0;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .navbar-links.open ~ .navbar-auth {
+    display: flex;
+  }
+
+  .navbar-filters {
+    order: 4;
   }
 }
 
@@ -402,46 +481,9 @@ button.danger:hover {
 }
 
 /* Tables */
-.filter {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-/* בדסקטופ המעטפת שקופה - כל הפקדים ממשיכים באותה שורה */
-.filter-row2 {
-  display: contents;
-}
-
-/* תיבות הסינון נראות כמו שאר התיבות באפליקציה, ללא השפעה ממצב כהה בטלפון */
-.filter input,
-.filter select {
-  padding: 6px 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-  color: var(--text-h);
-  font: inherit;
-  font-size: 16px;
-}
-
-/* במובייל: שורה ראשונה - תיבת החיפוש; שורה שנייה - כיתה, יצוא לאקסל ושינוי הצגת הטבלה */
-@media (max-width: 700px) {
-  /* תיבת החיפוש ממלאת את כל השורה */
-  .filter input[type="search"] {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .filter-row2 {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    flex-basis: 100%;
-  }
+/* שורת כפתור מעבר תצוגת הטבלה - מוצגת במובייל בלבד */
+.table-toggle-row {
+  display: none;
 }
 
 .export-excel {
@@ -714,7 +756,7 @@ td.meetings-cell {
   }
 }
 
-/* עמודי טבלאות (תלמידים וצוות): כל העמוד נשאר קבוע - הנאבאר, הכותרת ושורת הסינון לא זזים, ורק הטבלה גוללת */
+/* עמודי טבלאות (תלמידים וצוות): כל העמוד נשאר קבוע - הנאבאר (כולל פקדי הסינון) והכותרת לא זזים, ורק הטבלה גוללת */
 .pupils-page,
 .teachers-page {
   display: flex;
@@ -806,6 +848,11 @@ td.actions button + button {
 
 /* במובייל ברירת המחדל היא הטבלה המצומצמת, והכפתור מאפשר מעבר למורחבת */
 @media (max-width: 700px) {
+  .table-toggle-row {
+    display: flex;
+    margin-bottom: 12px;
+  }
+
   .table-toggle {
     display: block;
   }

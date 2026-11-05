@@ -1,21 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as XLSX from 'xlsx'
 import type { Pupil } from '../types/Pupil'
 import type { Meeting } from '../types/Meeting'
 import { deletePupil, getPupils } from '../services/pupilService'
 import { getAllMeetings, deleteMeeting } from '../services/meetingService'
-import { CLASSES, classLabel, classSortIndex } from '../utils/grades'
-import { getStoredUser } from '../services/authService'
+import { classLabel, classSortIndex } from '../utils/grades'
 import { useTableSort, type SortDir } from '../hooks/useTableSort'
+import { usePupilsFilter } from '../hooks/usePupilsFilter'
 import SortableTh from './SortableTh'
-import excelIcon from '../assets/excel-icon.png'
 
 type PupilSortKey = 'name' | 'className' | 'Integration' | 'Diagnosis' | 'Educationalresponse' | 'Emotionalresponse' | 'Otherresponse' | 'Notes'
-
-function ExcelIcon() {
-    return <img src={excelIcon} width="22" height="22" aria-hidden="true" alt="" />
-}
 
 function formatMeetingDate(date: string): string {
     return new Date(date).toLocaleDateString('he-IL')
@@ -54,22 +49,23 @@ export default function PupilsTable() {
     const navigate = useNavigate()
     const [pupils, setPupils] = useState<Pupil[]>([])
     const [error, setError] = useState('')
-    // admin ו-superuser רואים את כל הכיתות ויכולים לסנן לפי כיתה
-    const seesAllClasses = ['admin', 'superuser'].includes(getStoredUser()?.role ?? '')
-    const [selectedClass, setSelectedClass] = useState('')
-    const [search, setSearch] = useState('')
+    // החיפוש וסינון הכיתה מוצגים בנאבאר ומשותפים לטבלה דרך הקונטקסט
+    const filter = usePupilsFilter()
+    const search = filter?.search ?? ''
+    const selectedClass = filter?.selectedClass ?? ''
+    const registerExport = filter?.registerExport
     const [wideTable, setWideTable] = useState(false)
     const [selectedPupil, setSelectedPupil] = useState<Pupil | null>(null)
     const [meetingsByPupil, setMeetingsByPupil] = useState<Record<string, Meeting[]>>({})
     const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
     const { sortColumn, sortDir, toggleSort } = useTableSort<PupilSortKey>('className')
     const query = search.trim().toLowerCase()
-    const visiblePupils = pupils.filter(p =>
+    const visiblePupils = useMemo(() => pupils.filter(p =>
         (!selectedClass || p.className === selectedClass) &&
         (!query || [p.name, p.className, p.Integration, p.Diagnosis, p.Educationalresponse, p.Emotionalresponse, p.Otherresponse, p.Notes]
             .some(field => field?.toLowerCase().includes(query)))
-    )
-    const sortedPupils = [...visiblePupils].sort((a, b) => comparePupils(a, b, sortColumn, sortDir))
+    ), [pupils, selectedClass, query])
+    const sortedPupils = useMemo(() => [...visiblePupils].sort((a, b) => comparePupils(a, b, sortColumn, sortDir)), [visiblePupils, sortColumn, sortDir])
 
     useEffect(() => {
         getPupils()
@@ -91,8 +87,8 @@ export default function PupilsTable() {
             .catch(() => {})
     }, [])
 
-    function exportToExcel() {
-        // מיוצא מה שמוצג כרגע: אותן שורות (סינון/חיפוש/מיון) ואותן עמודות של הטבלה הנראית
+    // מיוצא מה שמוצג כרגע: אותן שורות (סינון/חיפוש/מיון) ואותן עמודות של הטבלה הנראית
+    const exportToExcel = useCallback(() => {
         const compact = window.matchMedia('(max-width: 700px)').matches && !wideTable
         const headers = compact
             ? ['שם', 'כיתה']
@@ -109,7 +105,13 @@ export default function PupilsTable() {
         workbook.Workbook = { Views: [{ RTL: true }] }
         XLSX.utils.book_append_sheet(workbook, worksheet, 'תלמידים')
         XLSX.writeFile(workbook, 'תלמידים.xlsx')
-    }
+    }, [sortedPupils, wideTable])
+
+    // כפתור היצוא בנאבאר מפעיל את היצוא דרך הקונטקסט; הרישום מתעדכן כשהנתונים המוצגים משתנים
+    useEffect(() => {
+        registerExport?.(exportToExcel)
+        return () => registerExport?.(null)
+    }, [registerExport, exportToExcel])
 
     async function handleDeleteMeeting(meeting: Meeting) {
         if (!window.confirm(`למחוק את הפגישה מתאריך ${formatMeetingDate(meeting.date)}?`)) return
@@ -139,35 +141,10 @@ export default function PupilsTable() {
     return (
         <>
         {error && <p className="form-error">{error}</p>}
-        <div className="filter">
-            <input
-                type="search"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="חיפוש..."
-            />
-            <div className="filter-row2">
-                {seesAllClasses && (
-                    <label>
-                        כיתה:{' '}
-                        <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>
-                            <option value="">כל הכיתות</option>
-                            {CLASSES.map(className => (
-                                <option key={className} value={className}>{classLabel(className)}</option>
-                            ))}
-                        </select>
-                    </label>
-                )}
-                <span className="export-excel">
-                    <span>יצא לאקסל:</span>
-                    <button type="button" className="export-excel-btn" onClick={exportToExcel} title="יצא לאקסל" aria-label="יצא לאקסל">
-                        <ExcelIcon />
-                    </button>
-                </span>
-                <button type="button" className="table-toggle" onClick={() => setWideTable(w => !w)}>
-                    {wideTable ? 'טבלה מצומצמת' : 'טבלה מורחבת'}
-                </button>
-            </div>
+        <div className="table-toggle-row">
+            <button type="button" className="table-toggle" onClick={() => setWideTable(w => !w)}>
+                {wideTable ? 'טבלה מצומצמת' : 'טבלה מורחבת'}
+            </button>
         </div>
         <div className={`table-wrap compact-wrap${wideTable ? ' hidden' : ''}`}>
         <table>

@@ -1,13 +1,24 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { getStoredUser, logout } from '../services/authService'
+import { usePupilsFilter } from '../hooks/usePupilsFilter'
+import { CLASSES, classLabel } from '../utils/grades'
+import excelIcon from '../assets/excel-icon.png'
+
+function ExcelIcon() {
+    return <img src={excelIcon} width="22" height="22" aria-hidden="true" alt="" />
+}
 
 export default function Navbar() {
     const navigate = useNavigate()
     const token = localStorage.getItem('token')
     const isAdmin = getStoredUser()?.role === 'admin'
+    // admin ו-superuser רואים את כל הכיתות ויכולים לסנן לפי כיתה
+    const seesAllClasses = ['admin', 'superuser'].includes(getStoredUser()?.role ?? '')
     const [open, setOpen] = useState(false)
     const close = () => setOpen(false)
+    // פקדי הסינון של טבלת התלמידים - מוצגים רק בעמוד התלמידים, שעטוף ב-PupilsFilterProvider
+    const pupilsFilter = usePupilsFilter()
 
     function handleLogout() {
         logout()
@@ -31,6 +42,7 @@ export default function Navbar() {
       </button>
       {/* במובייל דף הבית מוצג לצד ההמבורגר ולא בתוך התפריט */}
       {token && <NavLink to="/" className="navbar-home" onClick={close}>דף הבית</NavLink>}
+      
       <div className={`navbar-links${open ? ' open' : ''}`}>
         {token && (
           <>
@@ -41,17 +53,45 @@ export default function Navbar() {
             <NavLink to="/pupilForm" onClick={close}>הוספת תלמיד</NavLink>
           </>
         )}
-        <span className="navbar-auth">
-          {token ? (
-            <button className="danger" onClick={handleLogout}>התנתקות</button>
-          ) : (
-            <>
-              <NavLink to="/login" onClick={close}>התחברות</NavLink>
-              <NavLink to="/register" onClick={close}>הרשמה</NavLink>
-            </>
-          )}
-        </span>
       </div>
+      {pupilsFilter && (
+        <div className="navbar-filters">
+          <input
+            type="search"
+            value={pupilsFilter.search}
+            onChange={e => pupilsFilter.setSearch(e.target.value)}
+            placeholder="חיפוש..."
+          />
+          {seesAllClasses && (
+            <label>
+              כיתה:{' '}
+              <select value={pupilsFilter.selectedClass} onChange={e => pupilsFilter.setSelectedClass(e.target.value)}>
+                <option value="">כל הכיתות</option>
+                {CLASSES.map(className => (
+                  <option key={className} value={className}>{classLabel(className)}</option>
+                ))}
+              </select>
+            </label>
+          )}
+          <span className="export-excel">
+            <span>יצא לאקסל:</span>
+            <button type="button" className="export-excel-btn" onClick={() => pupilsFilter.exportHandler?.()} title="יצא לאקסל" aria-label="יצא לאקסל">
+              <ExcelIcon />
+            </button>
+          </span>
+        </div>
+      )}
+      {/* כפתור ההתנתקות מוצג בסוף השורה, בצד השמאלי */}
+      <span className="navbar-auth">
+        {token ? (
+          <button className="danger" onClick={handleLogout}>התנתקות</button>
+        ) : (
+          <>
+            <NavLink to="/login" onClick={close}>התחברות</NavLink>
+            <NavLink to="/register" onClick={close}>הרשמה</NavLink>
+          </>
+        )}
+      </span>
     </nav>
   )
 }
