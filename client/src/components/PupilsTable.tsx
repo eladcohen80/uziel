@@ -192,8 +192,7 @@ export default function PupilsTable() {
             <thead>
                 <tr>
                     <SortableTh label="שם" column="name" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
-                    <SortableTh label="כיתה" column="className" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
-                    
+                    <SortableTh label="כיתה" column="className" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />                    
                     <th>פרטים</th>
                 </tr>
             </thead>
