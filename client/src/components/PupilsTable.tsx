@@ -6,6 +6,7 @@ import type { Meeting } from '../types/Meeting'
 import { deletePupil, getPupils } from '../services/pupilService'
 import { getAllMeetings, deleteMeeting } from '../services/meetingService'
 import { classLabel, classSortIndex } from '../utils/grades'
+import { parseParticipants } from '../utils/participants'
 import { useTableSort, type SortDir } from '../hooks/useTableSort'
 import { usePupilsFilter } from '../hooks/usePupilsFilter'
 import SortableTh from './SortableTh'
@@ -16,15 +17,8 @@ function formatMeetingDate(date: string): string {
     return new Date(date).toLocaleDateString('he-IL')
 }
 
-// Postgres עלול להחזיר מערך כמחרוזת {"א","ב"} - מפרסרים לרשימה מופרדת בפסיקים
 function participantsText(participants: Meeting['participants']): string {
-    if (Array.isArray(participants)) return participants.join(', ')
-    return String(participants)
-        .replace(/^\{|\}$/g, '')
-        .split(',')
-        .map(p => p.trim().replace(/^"|"$/g, ''))
-        .filter(Boolean)
-        .join(', ')
+    return parseParticipants(participants).join(', ')
 }
 
 function comparePupils(a: Pupil, b: Pupil, key: PupilSortKey, dir: SortDir): number {

@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { getMeetingById, createMeeting, updateMeeting } from "../services/meetingService";
 import { getPupilById } from "../services/pupilService";
+import { getTeachers } from "../services/teacherService";
+import { parseParticipants } from "../utils/participants";
 
 const EMPTY_MEETING: Meeting = {
     id: "",
@@ -13,7 +15,15 @@ const EMPTY_MEETING: Meeting = {
     pupil_id: ""
 }
 
-const participantOptions = ['יועצת', 'מחנכ/ת', 'מנהלת', 'פסיכולוג', 'אבא', 'אמא'];
+const participantOptions = ['יועצת - אורטל כהן', 'מחנכ/ת', 'מנהלת- שפרה אדלר', 'פסיכולוג', 'אבא', 'אמא'];
+// אפשרויות שלצידן תיבת טקסט להזנת שם המשתתף
+const nameInputOptions = ['פסיכולוג', 'אבא', 'אמא'];
+const EDUCATOR_OPTION = 'מחנכ/ת';
+
+// מפריד בין האופציה לשם המשתתף, למשל: "אבא- דוד"
+function withName(option: string, name: string) {
+    return `${option}- ${name}`;
+}
 
 export default function MeetingForm() {
     const { id } = useParams<{ id: string }>();
@@ -26,14 +36,42 @@ export default function MeetingForm() {
     const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
     const [otherSelected, setOtherSelected] = useState(false);
     const [otherText, setOtherText] = useState('');
+    // שם המחנכ/ת נשלף מטבלת הצוות לפי כיתת התלמיד
+    const [educatorName, setEducatorName] = useState('');
+    const [participantNames, setParticipantNames] = useState<Record<string, string>>({});
     useEffect(() => {
         if (id) {
             getMeetingById(id).then(meeting => {
                 setMeeting(meeting);
-                const participants = Array.isArray(meeting.participants) ? meeting.participants : [];
+                const participants = parseParticipants(meeting.participants);
                 // משתתפים שאינם ברשימה הקבועה נטענים לשדה "אחר"
-                setSelectedParticipants(participants.filter(p => participantOptions.includes(p)));
-                const others = participants.filter(p => !participantOptions.includes(p));
+                const selected: string[] = [];
+                const names: Record<string, string> = {};
+                const others: string[] = [];
+                let savedEducatorName = '';
+                for (const p of participants) {
+                    if (participantOptions.includes(p)) {
+                        selected.push(p);
+                        continue;
+                    }
+                    // ערך שנשמר עם שם, למשל "אבא- דוד" או "מחנכ/ת- שרה"
+                    const option = [EDUCATOR_OPTION, ...nameInputOptions].find(o => p.startsWith(`${o}-`));
+                    if (option) {
+                        selected.push(option);
+                        const name = p.slice(option.length + 1).trim();
+                        if (option === EDUCATOR_OPTION) {
+                            savedEducatorName = name;
+                        } else {
+                            names[option] = name;
+                        }
+                    } else {
+                        others.push(p);
+                    }
+                }
+                setSelectedParticipants(selected);
+                setParticipantNames(names);
+                // שם המחנכ/ת שנשמר בפגישה נשמר כפי שהוא; השליפה מטבלת הצוות תעדכן אותו רק אם נמצא מחנך לכיתה
+                if (savedEducatorName) setEducatorName(savedEducatorName);
                 if (others.length > 0) {
                     setOtherSelected(true);
                     setOtherText(others.join(', '));
@@ -47,7 +85,15 @@ export default function MeetingForm() {
     useEffect(() => {
         if (!meeting.pupil_id) return;
         getPupilById(meeting.pupil_id)
-            .then(pupil => setPupilName(pupil.name))
+            .then(pupil => {
+                setPupilName(pupil.name);
+                // המחנכ/ת הוא איש הצוות שמשויך לכיתת התלמיד וללא תפקיד (position=null)
+                return getTeachers().then(teachers => {
+                    const educator = teachers.find(t => t.grade === pupil.className && !t.position);
+                    // לא מנקים שם מחנכ/ת שנטען מהפגישה אם לא נמצא מחנך מעודכן לכיתה
+                    if (educator) setEducatorName(educator.name);
+                });
+            })
             .catch(() => setError("שגיאה בטעינת התלמיד"));
     }, [meeting.pupil_id])
 
@@ -60,8 +106,14 @@ export default function MeetingForm() {
             return;
         }
 
-        // הטקסט החופשי של "אחר" מתווסף לרשימת המשתתפים
-        const finalParticipants = [...selectedParticipants];
+        // שמות המשתתפים והטקסט החופשי של "אחר" מתווספים לרשימת המשתתפים
+        const finalParticipants = selectedParticipants.map(option => {
+            if (option === EDUCATOR_OPTION && educatorName) {
+                return withName(option, educatorName);
+            }
+            const name = participantNames[option]?.trim();
+            return name ? withName(option, name) : option;
+        });
         if (otherSelected && otherText.trim() !== '') {
             finalParticipants.push(otherText.trim());
         }
@@ -78,6 +130,7 @@ export default function MeetingForm() {
                 setSelectedParticipants([]);
                 setOtherSelected(false);
                 setOtherText('');
+                setParticipantNames({});
             }
         } catch {
             setError("שגיאה בשמירת הפגישה");
@@ -108,7 +161,15 @@ export default function MeetingForm() {
                 {participantOptions.map(option => (
                     <label key={option}>
                         <input type="checkbox" checked={selectedParticipants.includes(option)} onChange={() => toggleParticipant(option)} />
-                        {option}
+                        {option === EDUCATOR_OPTION && educatorName ? withName(option, educatorName) : option}
+                        {nameInputOptions.includes(option) && selectedParticipants.includes(option) && (
+                            <input
+                                type="text"
+                                placeholder="אנא ציין שם..."
+                                value={participantNames[option] ?? ''}
+                                onChange={(e) => setParticipantNames(prev => ({ ...prev, [option]: e.target.value }))}
+                            />
+                        )}
                     </label>
                 ))}
                 <label>
