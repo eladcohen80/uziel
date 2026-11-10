@@ -462,6 +462,13 @@ button.danger:hover {
   grid-column: 1 / -1;
 }
 
+/* עמודה בתוך טופס רחב - מקבצת שדות זה מתחת לזה */
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 @media (max-width: 700px) {
   .form-wide {
     grid-template-columns: 1fr;

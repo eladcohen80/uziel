@@ -164,10 +164,21 @@ async function initDb() {
             date DATE NOT NULL,
             subject TEXT NOT NULL,
             participants TEXT[] NOT NULL,
-            summary_and_recommendations TEXT NOT NULL,
+            summary TEXT NOT NULL,
+            recommendation TEXT,
             pupil_id UUID NOT NULL REFERENCES pupils(id) ON DELETE CASCADE
         )
     `
+    // מיגרציה לטבלאות קיימות: שינוי שם העמודה summary_and_recommendations ל-summary והוספת recommendation
+    await sql`
+        DO $$
+        BEGIN
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'meetings' AND column_name = 'summary_and_recommendations') THEN
+                ALTER TABLE meetings RENAME COLUMN summary_and_recommendations TO summary;
+            END IF;
+        END $$
+    `
+    await sql`ALTER TABLE meetings ADD COLUMN IF NOT EXISTS recommendation TEXT`
     // בטבלה קיימת שלא נוצרה ע"י initDb העמודה עלולה להיות חסרה
     await sql`ALTER TABLE pupils ADD COLUMN IF NOT EXISTS startyeargrade1 INTEGER`
     // class_suffix: המספר (1/2/3) נשמר קבוע; האות נגזרת משנת ההתחלה ב-view. במקדמות נשמר השם המלא.
