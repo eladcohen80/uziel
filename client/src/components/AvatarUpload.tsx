@@ -14,6 +14,7 @@ interface CloudinarySignature {
   signature: string
   timestamp: number
   folder: string
+  uploadPreset: string
   cloudName: string
   apiKey: string
 }
@@ -60,7 +61,7 @@ export const PupilAvatarUpload: React.FC<AvatarUploadProps> = ({
           ? 'אין הרשאה להעלאת תמונה.'
           : 'לא ניתן לקבל אישור להעלאת תמונה.')
       }
-      const { signature, timestamp, folder, cloudName, apiKey }: CloudinarySignature =
+      const { signature, timestamp, folder, uploadPreset, cloudName, apiKey }: CloudinarySignature =
         await signatureResponse.json()
 
       const formData = new FormData()
@@ -69,6 +70,7 @@ export const PupilAvatarUpload: React.FC<AvatarUploadProps> = ({
       formData.append('timestamp', timestamp.toString())
       formData.append('signature', signature)
       formData.append('folder', folder)
+      formData.append('upload_preset', uploadPreset)
 
       const cloudinaryResponse = await fetch(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,

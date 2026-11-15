@@ -12,10 +12,11 @@ router.get('/cloudinary-signature', authMiddleware, (req, res) => {
 
     const timestamp = Math.floor(Date.now() / 1000)
     const folder = 'students_avatars'
+    const uploadPreset = 'uziel_preset'
 
     try {
         const signature = cloudinary.utils.api_sign_request(
-            { timestamp, folder },
+            { timestamp, folder, upload_preset: uploadPreset },
             credentials.apiSecret
         )
 
@@ -23,6 +24,7 @@ router.get('/cloudinary-signature', authMiddleware, (req, res) => {
             signature,
             timestamp,
             folder,
+            uploadPreset,
             cloudName: credentials.cloudName,
             apiKey: credentials.apiKey
         })
