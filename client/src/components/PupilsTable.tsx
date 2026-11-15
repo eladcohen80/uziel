@@ -21,6 +21,27 @@ function participantsText(participants: Meeting['participants']): string {
     return parseParticipants(participants).join(', ')
 }
 
+function originalAvatarUrl(url: string): string {
+    return url.replace('/upload/w_300,h_300,c_fill,g_face,q_auto,f_auto/', '/upload/')
+}
+
+function AvatarThumbnail({ pupil, onClick }: { pupil: Pupil; onClick: (url: string, name: string) => void }) {
+    if (!pupil.avatar_url) return <>—</>
+
+    const url = originalAvatarUrl(pupil.avatar_url)
+    const thumbnailUrl = url.replace('/upload/', '/upload/w_56,h_56,c_fill,g_face,q_auto,f_auto/')
+    return (
+        <button
+            type="button"
+            className="pupil-avatar-thumbnail"
+            aria-label={`הצג תמונה של ${pupil.name}`}
+            onClick={() => onClick(url, pupil.name)}
+        >
+            <img src={thumbnailUrl} alt="" loading="lazy" />
+        </button>
+    )
+}
+
 function comparePupils(a: Pupil, b: Pupil, key: PupilSortKey, dir: SortDir): number {
     if (key === 'className') {
         const cmp = classSortIndex(a.className) - classSortIndex(b.className)
@@ -93,6 +114,7 @@ export default function PupilsTable() {
     const registerExport = filter?.registerExport
     const [wideTable, setWideTable] = useState(false)
     const [selectedPupil, setSelectedPupil] = useState<Pupil | null>(null)
+    const [selectedAvatar, setSelectedAvatar] = useState<{ url: string; name: string } | null>(null)
     const [meetingsByPupil, setMeetingsByPupil] = useState<Record<string, Meeting[]>>({})
     const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
     const { sortColumn, sortDir, toggleSort } = useTableSort<PupilSortKey>('className')
@@ -103,6 +125,15 @@ export default function PupilsTable() {
             .some(field => field?.toLowerCase().includes(query)))
     ), [pupils, selectedClass, query])
     const sortedPupils = useMemo(() => [...visiblePupils].sort((a, b) => comparePupils(a, b, sortColumn, sortDir)), [visiblePupils, sortColumn, sortDir])
+
+    useEffect(() => {
+        if (!selectedAvatar) return
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') setSelectedAvatar(null)
+        }
+        window.addEventListener('keydown', handleKeyDown)
+        return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [selectedAvatar])
 
     useEffect(() => {
         getPupils()
@@ -199,10 +230,11 @@ export default function PupilsTable() {
                     <tr key={pupil.id}>
                         <td>{pupil.name}</td>
                         <td>{classLabel(pupil.className)}</td>
-                        <td>
-                            {pupil.avatar_url
-                                ? <a href={pupil.avatar_url} target="_blank" rel="noopener noreferrer">פתיחת תמונה</a>
-                                : '—'}
+                        <td className="avatar-cell">
+                            <AvatarThumbnail
+                                pupil={pupil}
+                                onClick={(url, name) => setSelectedAvatar({ url, name })}
+                            />
                         </td>
                         <td className="actions">
                             <button onClick={() => setSelectedPupil(pupil)}>פרטים</button>
@@ -237,10 +269,11 @@ export default function PupilsTable() {
                     <tr key={pupil.id}>
                         <td>{pupil.name}</td>
                         <td>{classLabel(pupil.className)}</td>
-                        <td>
-                            {pupil.avatar_url
-                                ? <a href={pupil.avatar_url} target="_blank" rel="noopener noreferrer">פתיחת תמונה</a>
-                                : '—'}
+                        <td className="avatar-cell">
+                            <AvatarThumbnail
+                                pupil={pupil}
+                                onClick={(url, name) => setSelectedAvatar({ url, name })}
+                            />
                         </td>
                         <td><ClampedCell text={pupil.Integration} /></td>
                         <td><ClampedCell text={pupil.Diagnosis} /></td>
@@ -315,6 +348,27 @@ export default function PupilsTable() {
                     <button className="danger" onClick={() => handleDelete(selectedPupil)}>מחיקה</button>
                     <button onClick={() => setSelectedPupil(null)}>סגירה</button>
                 </div>
+            </div>
+        </div>
+        )}
+        {selectedAvatar && (
+        <div className="modal-overlay avatar-lightbox" onClick={() => setSelectedAvatar(null)}>
+            <div
+                className="avatar-lightbox-content"
+                role="dialog"
+                aria-modal="true"
+                aria-label={`תמונת ${selectedAvatar.name}`}
+                onClick={e => e.stopPropagation()}
+            >
+                <button
+                    type="button"
+                    className="avatar-lightbox-close"
+                    aria-label="סגירה"
+                    onClick={() => setSelectedAvatar(null)}
+                >
+                    ×
+                </button>
+                <img src={selectedAvatar.url} alt={`תמונת ${selectedAvatar.name}`} />
             </div>
         </div>
         )}

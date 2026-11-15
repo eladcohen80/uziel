@@ -79,10 +79,7 @@ export const PupilAvatarUpload: React.FC<AvatarUploadProps> = ({
       const cloudinaryData: CloudinaryUploadResponse = await cloudinaryResponse.json()
       if (!cloudinaryData.secure_url) throw new Error('Cloudinary לא החזיר כתובת לתמונה.')
 
-      const optimizedUrl = cloudinaryData.secure_url.replace(
-        '/upload/',
-        '/upload/w_300,h_300,c_fill,g_face,q_auto,f_auto/'
-      )
+      const avatarUrl = cloudinaryData.secure_url
 
       if (studentId != null && String(studentId).trim()) {
         const saveResponse = await authFetch(
@@ -90,13 +87,13 @@ export const PupilAvatarUpload: React.FC<AvatarUploadProps> = ({
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ avatar_url: optimizedUrl }),
+            body: JSON.stringify({ avatar_url: avatarUrl }),
           }
         )
         if (!saveResponse.ok) throw new Error('שמירת התמונה בפרטי התלמיד נכשלה.')
       }
 
-      onUploadSuccess(optimizedUrl)
+      onUploadSuccess(avatarUrl)
     } catch (error) {
       console.error('Pupil avatar upload failed', error)
       setErrorMessage(error instanceof Error ? error.message : 'שגיאה בהעלאת התמונה.')
