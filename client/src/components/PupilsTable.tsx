@@ -35,7 +35,11 @@ function AvatarThumbnail({ pupil, onClick }: { pupil: Pupil; onClick: (url: stri
             type="button"
             className="pupil-avatar-thumbnail"
             aria-label={`הצג תמונה של ${pupil.name}`}
-            onClick={() => onClick(url, pupil.name)}
+            onKeyDown={event => event.stopPropagation()}
+            onClick={event => {
+                event.stopPropagation()
+                onClick(url, pupil.name)
+            }}
         >
             <img src={thumbnailUrl} alt="" loading="lazy" />
         </button>
@@ -222,12 +226,23 @@ export default function PupilsTable() {
                     <SortableTh label="שם" column="name" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <SortableTh label="כיתה" column="className" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <th>תמונה</th>
-                    <th>פרטים</th>
                 </tr>
             </thead>
             <tbody>
                 {sortedPupils.map(pupil => (
-                    <tr key={pupil.id}>
+                    <tr
+                        key={pupil.id}
+                        className="pupil-row-clickable"
+                        tabIndex={0}
+                        aria-label={`פתיחת פרטי ${pupil.name}`}
+                        onClick={() => setSelectedPupil(pupil)}
+                        onKeyDown={event => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault()
+                                setSelectedPupil(pupil)
+                            }
+                        }}
+                    >
                         <td>{pupil.name}</td>
                         <td>{classLabel(pupil.className)}</td>
                         <td className="avatar-cell">
@@ -236,13 +251,10 @@ export default function PupilsTable() {
                                 onClick={(url, name) => setSelectedAvatar({ url, name })}
                             />
                         </td>
-                        <td className="actions">
-                            <button onClick={() => setSelectedPupil(pupil)}>פרטים</button>
-                        </td>
                     </tr>
                 ))}
                 {sortedPupils.length === 0 && (
-                    <tr><td colSpan={4} className="empty">אין תלמידים להצגה</td></tr>
+                    <tr><td colSpan={3} className="empty">אין תלמידים להצגה</td></tr>
                 )}
             </tbody>
         </table>
@@ -323,7 +335,15 @@ export default function PupilsTable() {
         {selectedPupil && (
         <div className="modal-overlay" onClick={() => setSelectedPupil(null)}>
             <div className="pupil-card" onClick={e => e.stopPropagation()}>
-                <h2>{selectedPupil.name}</h2>
+                <h2 className="pupil-card-heading">
+                    {selectedPupil.avatar_url && (
+                        <img
+                            src={originalAvatarUrl(selectedPupil.avatar_url).replace('/upload/', '/upload/w_96,h_96,c_fill,g_face,q_auto,f_auto/')}
+                            alt={`תמונת ${selectedPupil.name}`}
+                        />
+                    )}
+                    <span dir="rtl">{selectedPupil.name}</span>
+                </h2>
                 <dl>
                     <div><dt>כיתה</dt><dd>{classLabel(selectedPupil.className)}</dd></div>
                     <div><dt>שילוב/סל אישי</dt><dd>{selectedPupil.Integration}</dd></div>

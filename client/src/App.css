@@ -1017,6 +1017,30 @@ td.actions button + button {
   color: var(--text-h);
 }
 
+.pupil-card h2.pupil-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  direction: ltr;
+}
+
+.pupil-card-heading img {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.pupil-row-clickable {
+  cursor: pointer;
+}
+
+.pupil-row-clickable:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
 .pupil-card dl {
   display: grid;
   gap: 12px;
