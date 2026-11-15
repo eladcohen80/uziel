@@ -218,6 +218,9 @@ export default function PupilsTable() {
             <button type="button" className="table-toggle" onClick={() => setWideTable(w => !w)}>
                 {wideTable ? 'טבלה מצומצמת' : 'טבלה מורחבת'}
             </button>
+            {!wideTable && (
+                <span className="table-toggle-hint">לצפיה בפרטים יש ללחוץ על שורת התלמיד</span>
+            )}
         </div>
         <div className={`table-wrap compact-wrap${wideTable ? ' hidden' : ''}`}>
         <table>
@@ -265,7 +268,7 @@ export default function PupilsTable() {
                 <tr>
                     <SortableTh label="שם" column="name" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <SortableTh label="כיתה" column="className" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
-                    <th>תמונה</th>
+                    <th></th>
                     <SortableTh label="שילוב/סל אישי" column="Integration" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <SortableTh label="יש איבחון? איזה?" column="Diagnosis" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <SortableTh label="תמיכה לימודית" column="Educationalresponse" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />

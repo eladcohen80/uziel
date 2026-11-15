@@ -918,11 +918,21 @@ td.actions button + button {
 @media (max-width: 700px) {
   .table-toggle-row {
     display: flex;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 12px;
   }
 
   .table-toggle {
     display: block;
+    flex: 0 0 auto;
+    margin-inline-start: 0;
+  }
+
+  .table-toggle-hint {
+    flex: 1;
+    font-size: 12px;
+    line-height: 1.4;
   }
 
   .compact-wrap {
