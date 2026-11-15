@@ -88,7 +88,7 @@ export const createMeeting = async (req: AuthRequest, res: Response) => {
         const { date, subject, participants, summary_and_recommendations, pupil_id } = req.body;
 
         // מערך ריק של משתתפים עובר את הבדיקה !participants - בודקים גם אורך
-        if (!date || !subject || !Array.isArray(participants) || participants.length === 0 || !summary_and_recommendations || !pupil_id) {
+        if (!date || !subject || !Array.isArray(participants) || participants.length === 0 || !participants.every((participant: unknown) => typeof participant === 'string') || !summary_and_recommendations || !pupil_id) {
             res.status(400).json({ error: 'All fields are required' });
             return;
         }
@@ -103,7 +103,7 @@ export const createMeeting = async (req: AuthRequest, res: Response) => {
         }
 
         const result = await sql`INSERT INTO meetings (date, subject, participants, summary_and_recommendations, pupil_id)
-                                 VALUES (${date}, ${subject}, ${participants}, ${summary_and_recommendations}, ${pupil_id})
+                                 VALUES (${date}, ${subject}, ARRAY(SELECT jsonb_array_elements_text(${JSON.stringify(participants)}::jsonb)), ${summary_and_recommendations}, ${pupil_id})
                                  RETURNING *`;
         res.status(201).json(result[0]);
     } catch (error) {
@@ -124,13 +124,13 @@ export const updateMeeting = async (req: AuthRequest, res: Response) => {
             return;
         }
 
-        if (!date || !subject || !Array.isArray(participants) || participants.length === 0 || !summary_and_recommendations || !pupil_id) {
+        if (!date || !subject || !Array.isArray(participants) || participants.length === 0 || !participants.every((participant: unknown) => typeof participant === 'string') || !summary_and_recommendations || !pupil_id) {
             res.status(400).json({ error: 'All fields are required' });
             return;
         }
 
         const result = await sql`UPDATE meetings
-                                 SET date = ${date}, subject = ${subject}, participants = ${participants}, summary_and_recommendations = ${summary_and_recommendations}, pupil_id = ${pupil_id}
+                                 SET date = ${date}, subject = ${subject}, participants = ARRAY(SELECT jsonb_array_elements_text(${JSON.stringify(participants)}::jsonb)), summary_and_recommendations = ${summary_and_recommendations}, pupil_id = ${pupil_id}
                                  WHERE id = ${id}
                                  AND (${cls}::text IS NULL OR pupil_id IN (SELECT id FROM pupils_view WHERE class_name = ${cls}::text))
                                  RETURNING *`;
@@ -169,4 +169,3 @@ export const deleteMeeting = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
-

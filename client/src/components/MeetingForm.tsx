@@ -118,6 +118,11 @@ export default function MeetingForm() {
             finalParticipants.push(otherText.trim());
         }
 
+        if (finalParticipants.length === 0) {
+            setError("יש לבחור לפחות משתתף אחד");
+            return;
+        }
+
         const meetingDataToSend = { ...meeting, participants: finalParticipants };
         try {
             if (id) {
