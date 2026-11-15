@@ -128,15 +128,10 @@ export default function MeetingForm() {
         try {
             if (id) {
                 await updateMeeting(id, meetingDataToSend);
-                navigate('/pupiles');
+                navigate('/pupiles', { state: { meetingSaved: true } });
             } else {
                 await createMeeting(meetingDataToSend);
-                // נשארים בטופס כדי לאפשר הוספת פגישה נוספת לאותו תלמיד
-                setMeeting({ ...EMPTY_MEETING, pupil_id: meeting.pupil_id });
-                setSelectedParticipants([]);
-                setOtherSelected(false);
-                setOtherText('');
-                setParticipantNames({});
+                navigate('/pupiles', { state: { meetingSaved: true } });
             }
         } catch {
             setError("שגיאה בשמירת הפגישה");

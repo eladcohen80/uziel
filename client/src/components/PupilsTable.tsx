@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import * as XLSX from 'xlsx'
 import type { Pupil } from '../types/Pupil'
 import type { Meeting } from '../types/Meeting'
@@ -82,6 +82,8 @@ function ClampedCell({ text }: { text?: string }) {
 
 export default function PupilsTable() {
     const navigate = useNavigate()
+    const location = useLocation()
+    const meetingSaved = location.state?.meetingSaved === true
     const [pupils, setPupils] = useState<Pupil[]>([])
     const [error, setError] = useState('')
     // החיפוש וסינון הכיתה מוצגים בנאבאר ומשותפים לטבלה דרך הקונטקסט
@@ -175,6 +177,7 @@ export default function PupilsTable() {
 
     return (
         <>
+        {meetingSaved && <p className="form-success" role="status">הפגישה נשמרה בהצלחה</p>}
         {error && <p className="form-error">{error}</p>}
         <div className="table-toggle-row">
             <button type="button" className="table-toggle" onClick={() => setWideTable(w => !w)}>
