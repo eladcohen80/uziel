@@ -85,10 +85,9 @@ export const createMeeting = async (req: AuthRequest, res: Response) => {
     const cls = allowedClass(req)
     if (cls === undefined) return forbidNoClass(res)
     try {
-        const { date, subject, participants, summary_and_recommendations, pupil_id } = req.body;
+        const { date, subject, participants, summary, recommendation = '', pupil_id } = req.body;
 
-        // מערך ריק של משתתפים עובר את הבדיקה !participants - בודקים גם אורך
-        if (!date || !subject || !Array.isArray(participants) || participants.length === 0 || !participants.every((participant: unknown) => typeof participant === 'string') || !summary_and_recommendations || !pupil_id) {
+        if (!date || !subject || !Array.isArray(participants) || participants.length === 0 || !participants.every((participant: unknown) => typeof participant === 'string') || !summary || !pupil_id) {
             res.status(400).json({ error: 'All fields are required' });
             return;
         }
@@ -102,8 +101,8 @@ export const createMeeting = async (req: AuthRequest, res: Response) => {
             }
         }
 
-        const result = await sql`INSERT INTO meetings (date, subject, participants, summary_and_recommendations, pupil_id)
-                                 VALUES (${date}, ${subject}, ARRAY(SELECT jsonb_array_elements_text(${JSON.stringify(participants)}::jsonb)), ${summary_and_recommendations}, ${pupil_id})
+        const result = await sql`INSERT INTO meetings (date, subject, participants, summary, recommendation, pupil_id)
+                                 VALUES (${date}, ${subject}, ARRAY(SELECT jsonb_array_elements_text(${JSON.stringify(participants)}::jsonb)), ${summary}, ${recommendation}, ${pupil_id})
                                  RETURNING *`;
         res.status(201).json(result[0]);
     } catch (error) {
@@ -117,20 +116,20 @@ export const updateMeeting = async (req: AuthRequest, res: Response) => {
     if (cls === undefined) return forbidNoClass(res)
     try {
         const { id } = req.params;
-        const { date, subject, participants, summary_and_recommendations, pupil_id } = req.body;
+        const { date, subject, participants, summary, recommendation = '', pupil_id } = req.body;
 
         if (!id) {
             res.status(400).json({ error: 'id parameter is required' });
             return;
         }
 
-        if (!date || !subject || !Array.isArray(participants) || participants.length === 0 || !participants.every((participant: unknown) => typeof participant === 'string') || !summary_and_recommendations || !pupil_id) {
+        if (!date || !subject || !Array.isArray(participants) || participants.length === 0 || !participants.every((participant: unknown) => typeof participant === 'string') || !summary || !pupil_id) {
             res.status(400).json({ error: 'All fields are required' });
             return;
         }
 
         const result = await sql`UPDATE meetings
-                                 SET date = ${date}, subject = ${subject}, participants = ARRAY(SELECT jsonb_array_elements_text(${JSON.stringify(participants)}::jsonb)), summary_and_recommendations = ${summary_and_recommendations}, pupil_id = ${pupil_id}
+                                 SET date = ${date}, subject = ${subject}, participants = ARRAY(SELECT jsonb_array_elements_text(${JSON.stringify(participants)}::jsonb)), summary = ${summary}, recommendation = ${recommendation}, pupil_id = ${pupil_id}
                                  WHERE id = ${id}
                                  AND (${cls}::text IS NULL OR pupil_id IN (SELECT id FROM pupils_view WHERE class_name = ${cls}::text))
                                  RETURNING *`;

@@ -11,7 +11,8 @@ const EMPTY_MEETING: Meeting = {
     date: "",
     subject: "",
     participants: [],
-    summary_and_recommendations: "",
+    summary: "",
+    recommendation: "",
     pupil_id: ""
 }
 
@@ -153,14 +154,22 @@ export default function MeetingForm() {
     }
     return (
         <form className="form form-wide" onSubmit={handleSubmit}>
-            <label>
-                תאריך:
-                <input type="date" name="date" value={meeting.date ? meeting.date.slice(0, 10) : ''} onChange={handleChange} required />
-            </label>
-            <label>
-                נושא:
-                <input type="text" name="subject" value={meeting.subject} onChange={handleChange} required />
-            </label>
+            {/* עמודה ימנית: פרטי הפגישה */}
+            <div className="form-column">
+                <label>
+                    שם התלמיד:
+                    <input type="text" value={pupilName} readOnly />
+                </label>
+                <label>
+                    תאריך:
+                    <input type="date" name="date" value={meeting.date ? meeting.date.slice(0, 10) : ''} onChange={handleChange} required />
+                </label>
+                <label>
+                    נושא:
+                    <input type="text" name="subject" value={meeting.subject} onChange={handleChange} required />
+                </label>
+            </div>
+            {/* עמודה שמאלית: משתתפים */}
             <fieldset className="form-radios">
                 <legend>משתתפים:</legend>
                 {participantOptions.map(option => (
@@ -190,13 +199,14 @@ export default function MeetingForm() {
                     />
                 )}
             </fieldset>
+            {/* שורה תחתונה: סיכום מימין, המלצות משמאל */}
             <label>
-                סיכום והמלצות:
-                <textarea name="summary_and_recommendations" value={meeting.summary_and_recommendations} onChange={handleChange} required />
+                סיכום:
+                <textarea name="summary" value={meeting.summary} onChange={handleChange} required />
             </label>
             <label>
-                שם התלמיד:
-                <input type="text" value={pupilName} readOnly />
+                המלצות:
+                <textarea name="recommendation" value={meeting.recommendation} onChange={handleChange} />
             </label>
             {error && <p className="form-error">{error}</p>}
             <div className="form-actions">

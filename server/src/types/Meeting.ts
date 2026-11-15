@@ -3,6 +3,7 @@ export type Meeting = {
     date: string;
     subject: string;
     participants: string[];
-    summary_and_recommendations: string;
+    summary: string;
+    recommendation: string;
     pupil_id: string;
 };

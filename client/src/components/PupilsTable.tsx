@@ -261,7 +261,8 @@ export default function PupilsTable() {
                     <div><dt>תאריך</dt><dd>{formatMeetingDate(selectedMeeting.date)}</dd></div>
                     <div><dt>נושא</dt><dd>{selectedMeeting.subject}</dd></div>
                     <div><dt>משתתפים</dt><dd>{participantsText(selectedMeeting.participants)}</dd></div>
-                    <div><dt>סיכום והמלצות</dt><dd>{selectedMeeting.summary_and_recommendations}</dd></div>
+                    <div><dt>סיכום</dt><dd>{selectedMeeting.summary}</dd></div>
+                    <div><dt>המלצות</dt><dd>{selectedMeeting.recommendation}</dd></div>
                 </dl>
                 <div className="pupil-card-actions">
                     <button onClick={() => navigate(`/meetingForm/${selectedMeeting.id}`)}>עריכה</button>
