@@ -20,7 +20,10 @@ interface CloudinarySignature {
 }
 
 interface CloudinaryUploadResponse {
-  secure_url: string
+  secure_url?: string
+  error?: {
+    message?: string
+  }
 }
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -61,24 +64,46 @@ export const PupilAvatarUpload: React.FC<AvatarUploadProps> = ({
           ? 'אין הרשאה להעלאת תמונה.'
           : 'לא ניתן לקבל אישור להעלאת תמונה.')
       }
-      const { signature, timestamp, folder, uploadPreset, cloudName, apiKey }: CloudinarySignature =
+      const signatureData: CloudinarySignature =
         await signatureResponse.json()
+      if (
+        !signatureData.signature ||
+        !signatureData.timestamp ||
+        !signatureData.folder ||
+        signatureData.uploadPreset !== 'uziel_preset' ||
+        !signatureData.cloudName ||
+        !signatureData.apiKey
+      ) {
+        throw new Error('שרת החתימה לא מעודכן. יש לפרוס מחדש גם את השרת.')
+      }
 
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('api_key', apiKey)
-      formData.append('timestamp', timestamp.toString())
-      formData.append('signature', signature)
-      formData.append('folder', folder)
-      formData.append('upload_preset', uploadPreset)
+      formData.append('api_key', signatureData.apiKey)
+      formData.append('timestamp', signatureData.timestamp.toString())
+      formData.append('signature', signatureData.signature)
+      formData.append('folder', signatureData.folder)
+      formData.append('upload_preset', signatureData.uploadPreset)
 
       const cloudinaryResponse = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        `https://api.cloudinary.com/v1_1/${signatureData.cloudName}/image/upload`,
         { method: 'POST', body: formData }
       )
 
-      if (!cloudinaryResponse.ok) throw new Error('העלאת התמונה נכשלה.')
-      const cloudinaryData: CloudinaryUploadResponse = await cloudinaryResponse.json()
+      let cloudinaryData: CloudinaryUploadResponse
+      try {
+        cloudinaryData = await cloudinaryResponse.json()
+      } catch (error) {
+        console.error('Cloudinary returned an invalid response', error)
+        throw new Error(`Cloudinary החזיר תשובה לא תקינה (HTTP ${cloudinaryResponse.status}).`)
+      }
+      if (!cloudinaryResponse.ok) {
+        const message = cloudinaryData.error?.message
+        console.error('Cloudinary upload failed', cloudinaryResponse.status, message)
+        throw new Error(message
+          ? `Cloudinary: ${message}`
+          : `העלאת התמונה נכשלה (HTTP ${cloudinaryResponse.status}).`)
+      }
       if (!cloudinaryData.secure_url) throw new Error('Cloudinary לא החזיר כתובת לתמונה.')
 
       const avatarUrl = cloudinaryData.secure_url
