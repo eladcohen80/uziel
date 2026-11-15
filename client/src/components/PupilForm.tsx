@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import type { Pupil } from '../types/Pupil'
 import { createPupil, getPupilById, updatePupil } from '../services/pupilService'
 import { CLASSES, classLabel, isPromotingClass } from '../utils/grades'
+import { PupilAvatarUpload } from './AvatarUpload'
 
 const EMPTY_PUPIL: Pupil = {
     id: '',
@@ -21,6 +22,7 @@ export default function PupilForm(){
     const navigate = useNavigate()
     const [pupil, setPupil] = useState<Pupil>(EMPTY_PUPIL)
     const [error, setError] = useState('')
+    const [isAvatarUploading, setIsAvatarUploading] = useState(false)
 
     useEffect(() => {
         if (!id) return
@@ -40,11 +42,10 @@ export default function PupilForm(){
         try {
             if (pupil.id) {
                 await updatePupil(pupil)
-                navigate('/pupiles')
             } else {
                 await createPupil(pupil)
-                setPupil(EMPTY_PUPIL)
             }
+            navigate('/pupiles')
         } catch {
             setError('שגיאה בשמירת התלמיד')
         }
@@ -52,6 +53,15 @@ export default function PupilForm(){
 
     return (
         <form className="form form-wide" onSubmit={handleSubmit}>
+            {(!id || pupil.id) && (
+                <PupilAvatarUpload
+                    studentId={pupil.id || undefined}
+                    isEditing={Boolean(id)}
+                    currentAvatarUrl={pupil.avatar_url ?? null}
+                    onUploadSuccess={(newUrl) => setPupil(prev => ({ ...prev, avatar_url: newUrl }))}
+                    onUploadStateChange={setIsAvatarUploading}
+                />
+            )}
             <label>
                 שם
                 <input name="name" value={pupil.name} onChange={handleChange} required />
@@ -96,7 +106,7 @@ export default function PupilForm(){
             </label>
             {error && <p className="form-error">{error}</p>}
             <div className="form-actions">
-                <button type="submit">שמירה</button>
+                <button type="submit" disabled={isAvatarUploading}>שמירה</button>
                 <button type="button" onClick={() => navigate('/pupiles')}>סגירה</button>
             </div>
         </form>

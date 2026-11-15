@@ -9,4 +9,5 @@ export type Pupil = {
   Emotionalresponse: string
   Otherresponse: string
   Notes: string
+  avatar_url?: string | null
 }

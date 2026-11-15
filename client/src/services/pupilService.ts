@@ -15,6 +15,7 @@ type PupilRow = {
   emotionalresponse: string
   otherresponse: string
   notes: string
+  avatar_url: string | null
 }
 
 function mapPupil(row: PupilRow): Pupil {
@@ -28,7 +29,8 @@ function mapPupil(row: PupilRow): Pupil {
     Educationalresponse: row.educationalresponse,
     Emotionalresponse: row.emotionalresponse,
     Otherresponse: row.otherresponse,
-    Notes: row.notes
+    Notes: row.notes,
+    avatar_url: row.avatar_url
   }
 }
 

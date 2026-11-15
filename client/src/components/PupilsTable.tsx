@@ -190,6 +190,7 @@ export default function PupilsTable() {
                 <tr>
                     <SortableTh label="שם" column="name" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <SortableTh label="כיתה" column="className" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
+                    <th>תמונה</th>
                     <th>פרטים</th>
                 </tr>
             </thead>
@@ -198,13 +199,18 @@ export default function PupilsTable() {
                     <tr key={pupil.id}>
                         <td>{pupil.name}</td>
                         <td>{classLabel(pupil.className)}</td>
+                        <td>
+                            {pupil.avatar_url
+                                ? <a href={pupil.avatar_url} target="_blank" rel="noopener noreferrer">פתיחת תמונה</a>
+                                : '—'}
+                        </td>
                         <td className="actions">
                             <button onClick={() => setSelectedPupil(pupil)}>פרטים</button>
                         </td>
                     </tr>
                 ))}
                 {sortedPupils.length === 0 && (
-                    <tr><td colSpan={3} className="empty">אין תלמידים להצגה</td></tr>
+                    <tr><td colSpan={4} className="empty">אין תלמידים להצגה</td></tr>
                 )}
             </tbody>
         </table>
@@ -215,6 +221,7 @@ export default function PupilsTable() {
                 <tr>
                     <SortableTh label="שם" column="name" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <SortableTh label="כיתה" column="className" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
+                    <th>תמונה</th>
                     <SortableTh label="שילוב/סל אישי" column="Integration" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <SortableTh label="יש איבחון? איזה?" column="Diagnosis" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
                     <SortableTh label="תמיכה לימודית" column="Educationalresponse" sortColumn={sortColumn} sortDir={sortDir} onSort={toggleSort} />
@@ -230,6 +237,11 @@ export default function PupilsTable() {
                     <tr key={pupil.id}>
                         <td>{pupil.name}</td>
                         <td>{classLabel(pupil.className)}</td>
+                        <td>
+                            {pupil.avatar_url
+                                ? <a href={pupil.avatar_url} target="_blank" rel="noopener noreferrer">פתיחת תמונה</a>
+                                : '—'}
+                        </td>
                         <td><ClampedCell text={pupil.Integration} /></td>
                         <td><ClampedCell text={pupil.Diagnosis} /></td>
                         <td><ClampedCell text={pupil.Educationalresponse} /></td>
@@ -251,7 +263,7 @@ export default function PupilsTable() {
                     </tr>
                 ))}
                 {sortedPupils.length === 0 && (
-                    <tr><td colSpan={10} className="empty">אין תלמידים להצגה</td></tr>
+                    <tr><td colSpan={11} className="empty">אין תלמידים להצגה</td></tr>
                 )}
             </tbody>
         </table>

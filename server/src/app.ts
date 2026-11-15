@@ -4,6 +4,7 @@ import teacherRoutes from './routes/teacherRoutes'
 import pupilRoutes from './routes/pupilRoutes'
 import authRoutes from './routes/authRoutes'
 import meetingRoutes from './routes/meetingRoutes'
+import cloudinaryRoutes from './routes/cloudinaryRoutes'
 
 const app = express()
 app.use(express.json())
@@ -11,7 +12,7 @@ app.use(express.json())
 // CORS - הקליינט מתארח בדומיין נפרד ב-Vercel
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', process.env.CLIENT_URL || '*')
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
     if (req.method === 'OPTIONS') {
         res.sendStatus(204)
@@ -45,6 +46,7 @@ app.use('/api/teachers', teacherRoutes)
 app.use('/api/pupils', pupilRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/meetings', meetingRoutes)
+app.use('/api', cloudinaryRoutes)
 
 // מתעלם משגיאות "כבר קיים" - קורה כשכמה serverless functions מאתחלות את מסד הנתונים במקביל ב-Vercel
 async function allowExists(query: PromiseLike<unknown>) {
@@ -77,7 +79,7 @@ async function initDbWithRetry(attempts = 3) {
 // כדי למנוע התנגשויות קטלוג כשכמה serverless functions עולים במקביל ב-Vercel
 // 2 = הרשאות אנשי צוות: עמודת role ב-teachers (user/superuser/admin)
 // 3 = טבלת meetings: פגישות של תלמידים
-const SCHEMA_VERSION = 4
+const SCHEMA_VERSION = 5
 
 async function initDb() {
     await sql`
@@ -122,9 +124,11 @@ async function initDb() {
             Educationalresponse TEXT,
             Emotionalresponse TEXT,
             Otherresponse TEXT,
-            Notes TEXT
+            Notes TEXT,
+            avatar_url TEXT
         )
     `
+    await sql`ALTER TABLE pupils ADD COLUMN IF NOT EXISTS avatar_url TEXT`
     // מעבר מכיתה מספרית (1-6) לשם כיתה (למשל א1)
     await sql`
         DO $$
